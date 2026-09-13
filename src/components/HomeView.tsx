@@ -9,6 +9,7 @@ interface HomeViewProps {
   triggerHaptic: () => void;
   triggerPushNotification: (title: string, msg: string) => void;
   onOpenProfile: () => void;
+  onClaimDailyReward: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -17,6 +18,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   triggerHaptic,
   triggerPushNotification,
   onOpenProfile,
+  onClaimDailyReward,
 }) => {
   const [matchingStatus, setMatchingStatus] = useState<'idle' | 'searching' | 'found'>('idle');
 
@@ -31,6 +33,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
       }, 700);
     }, 1200);
   };
+
+  const today = new Date().toISOString().split('T')[0];
+  const isClaimedToday = gameState.lastClaimedDaily === today;
 
   return (
     <div className="flex flex-col w-full relative z-10 select-none pb-6 text-white">
@@ -183,6 +188,54 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </span>
           )}
         </button>
+      </motion.div>
+
+      {/* Daily Reward Chest Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
+        className="card-glowing-blue p-4 rounded-2xl mb-4 text-left relative overflow-hidden"
+      >
+        <div className="absolute -right-6 -bottom-6 text-7xl opacity-10 select-none">🎁</div>
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-amber-400" />
+            <h3 className="font-headline font-bold uppercase text-xs text-white leading-none">
+              Daily Celestial Chest
+            </h3>
+          </div>
+          <span className={`text-[9px] font-headline font-bold px-2 py-0.5 rounded-md border ${
+            isClaimedToday
+              ? 'bg-emerald-950 text-emerald-300 border-emerald-500/50'
+              : 'bg-amber-950 text-amber-300 border-amber-400/50'
+          }`}>
+            {isClaimedToday ? 'CLAIMED TODAY' : 'AVAILABLE'}
+          </span>
+        </div>
+        <p className="text-xs text-blue-100/80 font-medium mb-3">
+          Claim your daily magical chest to receive free mystical currency and power-ups!
+        </p>
+        <div className="flex justify-between items-center gap-2">
+          <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1">
+            🪙 +500 Coins & 💎 +10 Diamonds
+          </span>
+          <button
+            onClick={() => {
+              if (isClaimedToday) return;
+              triggerHaptic();
+              onClaimDailyReward();
+            }}
+            disabled={isClaimedToday}
+            className={`font-headline text-[10px] font-black px-4 py-2 rounded-lg uppercase tracking-wider transition-all shadow-sm cursor-pointer ${
+              isClaimedToday
+                ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                : 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-[0_0_10px_rgba(251,191,36,0.5)] active:scale-[0.95]'
+            }`}
+          >
+            {isClaimedToday ? 'Claimed' : 'Claim Chest'}
+          </button>
+        </div>
       </motion.div>
 
       {/* Daily Quest Banner Card */}

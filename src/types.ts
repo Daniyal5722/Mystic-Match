@@ -18,6 +18,17 @@ export interface GameNotification {
   read: boolean;
 }
 
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  isUnlocked: boolean;
+  unlockedAt?: string;
+  icon: string;
+  rewardType: 'coins' | 'diamonds';
+  rewardValue: number;
+}
+
 export interface GameState {
   name: string;
   coins: number;
@@ -43,6 +54,15 @@ export interface GameState {
   soundEnabled: boolean;
   hapticsEnabled: boolean;
   currentPlayingLevelId: number | null;
+  boostersCount: {
+    hammer: number;
+    shuffle: number;
+    rainbow: number;
+    hint: number;
+    undo: number;
+  };
+  achievements: Achievement[];
+  lastClaimedDaily: string | null; // Date format: YYYY-MM-DD
 }
 
 export type GemType = 'ruby' | 'sapphire' | 'emerald' | 'topaz' | 'amethyst' | 'prism';

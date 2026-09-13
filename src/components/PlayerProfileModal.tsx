@@ -205,7 +205,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
           </div>
 
           {/* Games Played & Win Rate */}
-          <div className="bg-[#0e163b] border border-indigo-500/30 rounded-xl p-3 flex items-center justify-between">
+          <div className="bg-[#0e163b] border border-indigo-500/30 rounded-xl p-3 flex items-center justify-between mb-4">
             <div>
               <span className="text-[10px] font-headline font-bold uppercase text-violet-300 block">GAMES PLAYED</span>
               <span className="font-headline font-black text-xl text-white">{gameState.gamesPlayed}</span>
@@ -213,6 +213,52 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
             <div className="text-right">
               <span className="text-[10px] font-headline font-bold uppercase text-violet-300 block">VICTORY RATE</span>
               <span className="font-headline font-black text-base text-cyan-300">{winRate}%</span>
+            </div>
+          </div>
+
+          {/* Achievements Section */}
+          <div className="border-t border-indigo-500/30 pt-3 text-left">
+            <h3 className="font-headline font-bold uppercase text-xs text-violet-300 mb-2 flex justify-between">
+              <span>Achievements</span>
+              <span className="text-cyan-300">
+                {gameState.achievements.filter(a => a.isUnlocked).length} / {gameState.achievements.length}
+              </span>
+            </h3>
+            <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
+              {gameState.achievements.map((ach) => (
+                <div
+                  key={ach.id}
+                  className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all ${
+                    ach.isUnlocked
+                      ? 'bg-[#18265a] border-cyan-500/40'
+                      : 'bg-[#0f173b]/50 border-indigo-950 opacity-60'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base ${
+                    ach.isUnlocked ? 'bg-cyan-500/20 text-cyan-300' : 'bg-indigo-950/50 text-violet-300/40'
+                  }`}>
+                    {ach.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`font-headline text-xs font-bold leading-tight truncate ${ach.isUnlocked ? 'text-white' : 'text-violet-300/60'}`}>
+                      {ach.title}
+                    </h4>
+                    <p className="text-[10px] text-violet-300/70 leading-normal truncate">
+                      {ach.description}
+                    </p>
+                  </div>
+                  <div className="text-right flex flex-col items-end shrink-0">
+                    <span className={`text-[10px] font-headline font-black ${ach.isUnlocked ? 'text-amber-400' : 'text-violet-300/40'}`}>
+                      {ach.rewardType === 'coins' ? '🪙' : '💎'} {ach.rewardValue}
+                    </span>
+                    {ach.isUnlocked ? (
+                      <span className="text-[8px] font-bold text-cyan-300 uppercase mt-0.5">Unlocked</span>
+                    ) : (
+                      <span className="text-[8px] font-bold text-violet-300/30 uppercase mt-0.5">Locked</span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </motion.div>

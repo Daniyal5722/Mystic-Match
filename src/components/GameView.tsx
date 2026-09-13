@@ -16,6 +16,7 @@ interface GameViewProps {
   triggerHaptic: (type?: 'swap' | 'match' | 'win' | 'lose' | 'click' | 'booster') => void;
   triggerPushNotification: (title: string, msg: string) => void;
   onGameEnd: (won: boolean, score: number) => void;
+  onUpdateBoosters: (boosters: { hammer: number; shuffle: number; rainbow: number }) => void;
 }
 
 const BOARD_SIZE = 8;
@@ -153,6 +154,7 @@ export const GameView: React.FC<GameViewProps> = ({
   triggerHaptic,
   triggerPushNotification,
   onGameEnd,
+  onUpdateBoosters,
 }) => {
   const currentLevelId = gameState.currentPlayingLevelId || 1;
   const levelData = useMemo(() => gameState.levels.find(l => l.id === currentLevelId), [gameState.levels, currentLevelId]);
@@ -175,13 +177,9 @@ export const GameView: React.FC<GameViewProps> = ({
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [particleBursts, setParticleBursts] = useState<{ id: string, x: number, y: number, color: string }[]>([]);
 
-  // Power Boosters State
+  // Power Boosters State (Linked to global persistent state)
   const [boosterActive, setBoosterActive] = useState<'hammer' | 'shuffle' | 'rainbow' | null>(null);
-  const [boostersCount, setBoostersCount] = useState({
-    hammer: 3,
-    shuffle: 2,
-    rainbow: 1,
-  });
+  const boostersCount = gameState.boostersCount;
 
   const checkPossibleMoves = useCallback((currentBoard: BoardGem[][]) => {
     // Check horizontal swaps
@@ -496,7 +494,7 @@ export const GameView: React.FC<GameViewProps> = ({
 
     if (type === 'shuffle') {
       if (boostersCount.shuffle <= 0) return;
-      setBoostersCount(p => ({ ...p, shuffle: p.shuffle - 1 }));
+      onUpdateBoosters({ ...boostersCount, shuffle: boostersCount.shuffle - 1 });
       triggerHaptic('booster');
       shuffleBoard();
       setComboText('SHUFFLED!');
@@ -505,7 +503,7 @@ export const GameView: React.FC<GameViewProps> = ({
 
     if (type === 'rainbow') {
       if (boostersCount.rainbow <= 0) return;
-      setBoostersCount(p => ({ ...p, rainbow: p.rainbow - 1 }));
+      onUpdateBoosters({ ...boostersCount, rainbow: boostersCount.rainbow - 1 });
       triggerHaptic('booster');
       const nextBoard = board.map(row => row.map(g => ({ ...g })));
       for (let i = 0; i < 4; i++) {
@@ -526,7 +524,7 @@ export const GameView: React.FC<GameViewProps> = ({
 
   const triggerHammerSmash = (gem: BoardGem) => {
     setBoosterActive(null);
-    setBoostersCount(p => ({ ...p, hammer: p.hammer - 1 }));
+    onUpdateBoosters({ ...boostersCount, hammer: boostersCount.hammer - 1 });
     triggerHaptic('booster');
     setIsProcessing(true);
 

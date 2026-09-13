@@ -25,7 +25,7 @@ export default function App() {
       diamonds: 0,
       gemsCount: 0,
       score: 0,
-      level: 0,
+      level: 1, // Start at level 1 instead of 0 for correct progression
       xp: 0,
       xpMax: 1000,
       wins: 0,
@@ -48,17 +48,38 @@ export default function App() {
       soundEnabled: true,
       hapticsEnabled: true,
       currentPlayingLevelId: 1,
+      boostersCount: {
+        hammer: 3,
+        shuffle: 3,
+        rainbow: 2,
+        hint: 3,
+        undo: 2,
+      },
+      achievements: [
+        { id: 'first_match', title: 'First Match', description: 'Make your first crystal match!', isUnlocked: false, icon: '✨', rewardType: 'coins', rewardValue: 100 },
+        { id: 'first_win', title: 'First Victory', description: 'Successfully clear your first puzzle stage!', isUnlocked: false, icon: '🏆', rewardType: 'diamonds', rewardValue: 10 },
+        { id: 'combo_master', title: 'Combo Master', description: 'Form a Combo x4 or higher!', isUnlocked: false, icon: '💥', rewardType: 'coins', rewardValue: 250 },
+        { id: 'perfect_score', title: 'High Scorer', description: 'Reach 5,000 points in a single level!', isUnlocked: false, icon: '👑', rewardType: 'diamonds', rewardValue: 20 },
+        { id: 'level_10', title: 'Saga Initiate', description: 'Reach Player Level 10!', isUnlocked: false, icon: '🔮', rewardType: 'coins', rewardValue: 500 },
+        { id: 'booster_expert', title: 'Booster Expert', description: 'Use a power booster in a game!', isUnlocked: false, icon: '⚡', rewardType: 'coins', rewardValue: 150 }
+      ],
+      lastClaimedDaily: null,
     };
 
     try {
       const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
-        // Ensure diamonds and gemsCount stay in sync
         const syncedDiamonds = parsed.diamonds ?? parsed.gemsCount ?? 0;
         return {
           ...defaultState,
           ...parsed,
+          boostersCount: {
+            ...defaultState.boostersCount,
+            ...(parsed.boostersCount || {}),
+          },
+          achievements: parsed.achievements?.length ? parsed.achievements : defaultState.achievements,
+          lastClaimedDaily: parsed.lastClaimedDaily ?? null,
           diamonds: syncedDiamonds,
           gemsCount: syncedDiamonds,
         };
@@ -160,7 +181,7 @@ export default function App() {
       diamonds: 0,
       gemsCount: 0,
       score: 0,
-      level: 0,
+      level: 1,
       xp: 0,
       xpMax: 1000,
       wins: 0,
@@ -183,6 +204,22 @@ export default function App() {
       soundEnabled: true,
       hapticsEnabled: true,
       currentPlayingLevelId: 1,
+      boostersCount: {
+        hammer: 3,
+        shuffle: 3,
+        rainbow: 2,
+        hint: 3,
+        undo: 2,
+      },
+      achievements: [
+        { id: 'first_match', title: 'First Match', description: 'Make your first crystal match!', isUnlocked: false, icon: '✨', rewardType: 'coins', rewardValue: 100 },
+        { id: 'first_win', title: 'First Victory', description: 'Successfully clear your first puzzle stage!', isUnlocked: false, icon: '🏆', rewardType: 'diamonds', rewardValue: 10 },
+        { id: 'combo_master', title: 'Combo Master', description: 'Form a Combo x4 or higher!', isUnlocked: false, icon: '💥', rewardType: 'coins', rewardValue: 250 },
+        { id: 'perfect_score', title: 'High Scorer', description: 'Reach 5,000 points in a single level!', isUnlocked: false, icon: '👑', rewardType: 'diamonds', rewardValue: 20 },
+        { id: 'level_10', title: 'Saga Initiate', description: 'Reach Player Level 10!', isUnlocked: false, icon: '🔮', rewardType: 'coins', rewardValue: 500 },
+        { id: 'booster_expert', title: 'Booster Expert', description: 'Use a power booster in a game!', isUnlocked: false, icon: '⚡', rewardType: 'coins', rewardValue: 150 }
+      ],
+      lastClaimedDaily: null,
     });
     triggerPushNotification('Progress Reset', 'Your career records have been reset.');
   };
@@ -208,7 +245,7 @@ export default function App() {
               diamonds: 0,
               gemsCount: 0,
               score: 0,
-              level: 0,
+              level: 1,
               xp: 0,
               xpMax: 1000,
               wins: 0,
@@ -296,12 +333,6 @@ export default function App() {
           </div>
         </header>
 
-        {/* Accessibility Status Banner */}
-        <div className="px-4 py-1 bg-[#142054]/80 border-b border-indigo-500/30 flex items-center gap-2 text-[10px] font-semibold text-cyan-200">
-          <Volume2 size={12} className="shrink-0 text-cyan-400" />
-          <span className="truncate italic">Status: {screenReaderText}</span>
-        </div>
-
         {/* Floating Offline connection state indicator */}
         {gameState.offline && (
           <div className="mx-4 mt-2.5 bg-amber-950/70 border border-amber-400/50 rounded-xl p-2 flex items-center justify-between gap-2 shadow-md">
@@ -330,6 +361,22 @@ export default function App() {
                   triggerHaptic={triggerHapticFeedback}
                   triggerPushNotification={triggerPushNotification}
                   onOpenProfile={() => setIsProfileOpen(true)}
+                  onClaimDailyReward={() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    if (gameState.lastClaimedDaily === today) {
+                      triggerPushNotification('Already Claimed', 'You have already claimed today\'s Mystic Treasure chest!');
+                      return;
+                    }
+                    triggerHapticFeedback();
+                    setGameState((prev) => ({
+                      ...prev,
+                      coins: prev.coins + 500,
+                      diamonds: prev.diamonds + 10,
+                      gemsCount: prev.gemsCount + 10,
+                      lastClaimedDaily: today,
+                    }));
+                    triggerPushNotification('Treasure Claimed!', '🪙 +500 Coins and 💎 +10 Diamonds added to your magical stash.');
+                  }}
                 />
               )}
               {gameState.activeTab === 'map' && (
@@ -348,6 +395,12 @@ export default function App() {
                   setTab={setTab}
                   triggerHaptic={triggerHapticFeedback}
                   triggerPushNotification={triggerPushNotification}
+                  onUpdateBoosters={(newBoosters) => {
+                    setGameState((prev) => ({
+                      ...prev,
+                      boostersCount: newBoosters,
+                    }));
+                  }}
                   onGameEnd={(won, matchScore) => {
                     setGameState((prev) => {
                       const newGamesPlayed = prev.gamesPlayed + 1;
@@ -373,18 +426,50 @@ export default function App() {
                           if (lvl.id === prev.currentPlayingLevelId) {
                             return { ...lvl, stars: Math.max(lvl.stars, 3) };
                           }
-                          if (prev.currentPlayingLevelId < 10 && lvl.id === prev.currentPlayingLevelId + 1) {
+                          if (prev.currentPlayingLevelId < prev.levels.length && lvl.id === prev.currentPlayingLevelId + 1) {
                             return { ...lvl, isLocked: false };
                           }
                           return lvl;
                         });
                       }
 
+                      // Dynamic achievements checking and rewards unlocking
+                      let currentAchievements = [...prev.achievements];
+                      let bonusCoins = 0;
+                      let bonusDiamonds = 0;
+
+                      if (won) {
+                        const firstWinAch = currentAchievements.find(a => a.id === 'first_win');
+                        if (firstWinAch && !firstWinAch.isUnlocked) {
+                          currentAchievements = currentAchievements.map(a => a.id === 'first_win' ? { ...a, isUnlocked: true, unlockedAt: new Date().toISOString() } : a);
+                          bonusDiamonds += firstWinAch.rewardValue;
+                          triggerPushNotification('Achievement Unlocked!', `🏆 ${firstWinAch.title}: ${firstWinAch.description}`);
+                        }
+                      }
+
+                      if (matchScore >= 5000) {
+                        const scoreAch = currentAchievements.find(a => a.id === 'perfect_score');
+                        if (scoreAch && !scoreAch.isUnlocked) {
+                          currentAchievements = currentAchievements.map(a => a.id === 'perfect_score' ? { ...a, isUnlocked: true, unlockedAt: new Date().toISOString() } : a);
+                          bonusDiamonds += scoreAch.rewardValue;
+                          triggerPushNotification('Achievement Unlocked!', `🏆 ${scoreAch.title}: ${scoreAch.description}`);
+                        }
+                      }
+
+                      if (newLevel >= 10) {
+                        const levelAch = currentAchievements.find(a => a.id === 'level_10');
+                        if (levelAch && !levelAch.isUnlocked) {
+                          currentAchievements = currentAchievements.map(a => a.id === 'level_10' ? { ...a, isUnlocked: true, unlockedAt: new Date().toISOString() } : a);
+                          bonusCoins += levelAch.rewardValue;
+                          triggerPushNotification('Achievement Unlocked!', `🏆 ${levelAch.title}: ${levelAch.description}`);
+                        }
+                      }
+
                       return {
                         ...prev,
-                        coins: prev.coins + addedCoins,
-                        diamonds: prev.diamonds + addedDiamonds,
-                        gemsCount: prev.gemsCount + addedDiamonds,
+                        coins: prev.coins + addedCoins + bonusCoins,
+                        diamonds: prev.diamonds + addedDiamonds + bonusDiamonds,
+                        gemsCount: prev.gemsCount + addedDiamonds + bonusDiamonds,
                         score: prev.score + matchScore,
                         wins: newWins,
                         losses: newLosses,
@@ -393,6 +478,7 @@ export default function App() {
                         xpMax: newXpMax,
                         level: newLevel,
                         levels: updatedLevels,
+                        achievements: currentAchievements,
                       };
                     });
                   }}
