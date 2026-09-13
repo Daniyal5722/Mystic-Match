@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Coins, Gem, User, Home, Map as MapIcon, Settings as SettingsIcon, Wifi, WifiOff, Volume2, Sparkles } from 'lucide-react';
+import { Coins, Gem, User, Home, Map as MapIcon, Settings as SettingsIcon, Wifi, WifiOff, Volume2, Sparkles, Play } from 'lucide-react';
 import { GameState, Level } from './types';
 import { INITIAL_LEVELS } from './data';
 import { PlayerSetupOverlay } from './components/PlayerSetupOverlay';
@@ -11,6 +11,8 @@ import { MapView } from './components/MapView';
 import { GameView } from './components/GameView';
 import { SettingsView } from './components/SettingsView';
 import { NotificationToast } from './components/NotificationToast';
+
+import { playSound } from './audio';
 
 const LOCAL_STORAGE_KEY = 'mystic_match_data_v1';
 
@@ -77,40 +79,16 @@ export default function App() {
   const [screenReaderText, setScreenReaderText] = useState<string>('Welcome to Mystic Match!');
 
   // Haptic feedback & Web Audio click
-  const triggerHapticFeedback = () => {
+  const triggerHapticFeedback = (type: 'swap' | 'match' | 'win' | 'lose' | 'click' | 'booster' = 'click') => {
     if (gameState.hapticsEnabled && 'vibrate' in navigator) {
       try {
-        navigator.vibrate(15);
+        navigator.vibrate(type === 'win' ? [50, 50, 50] : 15);
       } catch (err) {
         // Safe catch for environment compatibility
       }
     }
 
-    if (gameState.soundEnabled) {
-      try {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        if (AudioContextClass) {
-          const ctx = new AudioContextClass();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(800, ctx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.1);
-
-          gain.gain.setValueAtTime(0.08, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
-
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-
-          osc.start();
-          osc.stop(ctx.currentTime + 0.12);
-        }
-      } catch (err) {
-        // Safe catch
-      }
-    }
+    playSound(type, gameState.soundEnabled);
   };
 
   // Push notification controller
@@ -469,13 +447,13 @@ export default function App() {
             <button
               id="game-board"
               onClick={() => setTab('game')}
-              className={`flex flex-col items-center justify-center gap-1 h-12 rounded-xl transition-all cursor-pointer ${
+              className={`flex flex-col p-2 min-w-[64px] items-center justify-center gap-1 h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'game'
                   ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-1'
-                  : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
+                  : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50 hover:scale-105 active:scale-95 animate-glow-pulse'
               }`}
             >
-              <span className="text-base select-none leading-none">🎮</span>
+              <Play size={18} className="fill-current" />
               <span className="text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Play</span>
             </button>
 

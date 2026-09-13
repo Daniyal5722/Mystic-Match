@@ -255,6 +255,12 @@ export const MapView: React.FC<MapViewProps> = ({
               {/* Battle Stats */}
               <div className="flex flex-col gap-2 text-xs">
                 <div className="flex justify-between py-1.5 border-b border-indigo-500/30">
+                  <span className="font-bold text-violet-300">Objective</span>
+                  <span className="font-headline font-black text-white uppercase flex items-center gap-1">
+                    {selectedLevel.objectiveTarget} {selectedLevel.objectiveType}s
+                  </span>
+                </div>
+                <div className="flex justify-between py-1.5 border-b border-indigo-500/30">
                   <span className="font-bold text-violet-300">Recommended Power</span>
                   <span className="font-headline font-black text-white">
                     {selectedLevel.recommendedPower.toLocaleString()}

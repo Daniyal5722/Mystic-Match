@@ -6,6 +6,8 @@ export interface Level {
   isBoss: boolean;
   recommendedPower: number;
   loot: string;
+  objectiveTarget?: number;
+  objectiveType?: GemType;
 }
 
 export interface GameNotification {

@@ -146,7 +146,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="card-glowing-gold p-4 rounded-2xl mb-4 text-center relative overflow-hidden"
+        className="bg-[#142054] border border-indigo-400/50 shadow-md p-4 rounded-2xl mb-4 text-center relative overflow-hidden"
       >
         <div className="inline-flex items-center gap-1 bg-amber-400/20 text-amber-300 border border-amber-400/50 px-2.5 py-0.5 rounded-full font-headline text-[9px] font-bold uppercase tracking-wider mb-2">
           <Zap size={10} className="fill-current text-amber-400" />
