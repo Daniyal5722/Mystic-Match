@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Bell, X, Sparkles } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Bell, X } from 'lucide-react';
 
 interface NotificationToastProps {
   title: string;

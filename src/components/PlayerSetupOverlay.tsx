@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Trophy, Gem, Coins, Play } from 'lucide-react';
+import { Sparkles, Play } from 'lucide-react';
 
 interface PlayerSetupOverlayProps {
   onContinue: (name: string) => void;

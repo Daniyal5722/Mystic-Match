@@ -23,8 +23,9 @@ for (let i = 1; i <= 50; i++) {
   const recommendedPower = 800 + (i - 1) * 150 + (isBoss ? 1000 : 0);
   const gemType = GEM_TYPES[(i - 1) % GEM_TYPES.length];
   
-  let objectiveTarget = 15 + Math.floor((i - 1) * 1.5);
-  if (isBoss) objectiveTarget = Math.floor(objectiveTarget * 1.3);
+  // Made levels easier to play and win
+  let objectiveTarget = 10 + Math.floor((i - 1) * 0.8);
+  if (isBoss) objectiveTarget = Math.floor(objectiveTarget * 1.1);
 
   let loot = `Standard Crystal x${3 + (i % 3)}`;
   if (isBoss) {

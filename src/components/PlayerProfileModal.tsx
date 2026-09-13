@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, User, Trophy, Award, Flame, Swords, Shield, Coins, Gem, Sparkles, Edit3, Check } from 'lucide-react';
+import { X, Trophy, Award, Swords, Shield, Sparkles, Edit3, Check } from 'lucide-react';
 import { GameState } from '../types';
 
 interface PlayerProfileModalProps {

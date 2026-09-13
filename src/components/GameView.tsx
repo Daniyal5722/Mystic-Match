@@ -159,17 +159,22 @@ export const GameView: React.FC<GameViewProps> = ({
   const currentLevelId = gameState.currentPlayingLevelId || 1;
   const levelData = useMemo(() => gameState.levels.find(l => l.id === currentLevelId), [gameState.levels, currentLevelId]);
   
-  const objectiveTarget = levelData?.objectiveTarget || 40;
+  // Dynamically reduce target requirements depending on Easy Mode
+  const rawTarget = levelData?.objectiveTarget || 30;
+  const isEasyMode = !!gameState.easyMode;
+  const objectiveTarget = isEasyMode ? Math.min(rawTarget, 10) : Math.min(rawTarget, 20); 
   const objectiveType = levelData?.objectiveType || 'sapphire';
+
+  const startingMoves = isEasyMode ? 60 : 45;
   
   const [board, setBoard] = useState<BoardGem[][]>([]);
   const [selectedGem, setSelectedGem] = useState<BoardGem | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
-  const [movesLeft, setMovesLeft] = useState<number>(25);
+  const [movesLeft, setMovesLeft] = useState<number>(startingMoves);
   const [gemsCollected, setGemsCollected] = useState<number>(0);
   const scoreRef = useRef(0);
-  const movesLeftRef = useRef(25);
+  const movesLeftRef = useRef(startingMoves);
   const gemsCollectedRef = useRef(0);
 
   const [gameResult, setGameResult] = useState<'won' | 'lost' | null>(null);
@@ -272,17 +277,19 @@ export const GameView: React.FC<GameViewProps> = ({
     setBoard(newBoard);
     setSelectedGem(null);
     setScore(0);
-    setMovesLeft(25);
+    setMovesLeft(startingMoves); // Use dynamic starting moves count
     setGemsCollected(0);
     scoreRef.current = 0;
-    movesLeftRef.current = 25;
+    movesLeftRef.current = startingMoves; // Use dynamic starting moves count
     gemsCollectedRef.current = 0;
     setGameResult(null);
     setComboText(null);
     setIsPaused(false);
-  }, [checkPossibleMoves]);
+  }, [checkPossibleMoves, startingMoves]);
 
-  useEffect(() => { initBoard(); }, [initBoard]);
+  useEffect(() => { 
+    initBoard(); 
+  }, [initBoard, currentLevelId, startingMoves]);
 
   const handleGemClick = (gem: BoardGem) => {
     if (isProcessing || gameResult || isPaused) return;

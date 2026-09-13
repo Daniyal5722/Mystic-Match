@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Coins, Gem, User, Home, Map as MapIcon, Settings as SettingsIcon, Wifi, WifiOff, Volume2, Sparkles, Play } from 'lucide-react';
+import { User, Home, Map as MapIcon, Settings as SettingsIcon, WifiOff, Play } from 'lucide-react';
 import { GameState, Level } from './types';
 import { INITIAL_LEVELS } from './data';
 import { PlayerSetupOverlay } from './components/PlayerSetupOverlay';
@@ -43,17 +43,18 @@ export default function App() {
       syncPending: false,
       onboardingCompleted: true,
       darkMode: false,
+      easyMode: false,
       highContrast: false,
       screenReaderEnabled: false,
       soundEnabled: true,
       hapticsEnabled: true,
       currentPlayingLevelId: 1,
       boostersCount: {
-        hammer: 3,
-        shuffle: 3,
-        rainbow: 2,
-        hint: 3,
-        undo: 2,
+        hammer: 15,
+        shuffle: 15,
+        rainbow: 15,
+        hint: 15,
+        undo: 15,
       },
       achievements: [
         { id: 'first_match', title: 'First Match', description: 'Make your first crystal match!', isUnlocked: false, icon: '✨', rewardType: 'coins', rewardValue: 100 },
@@ -199,17 +200,18 @@ export default function App() {
       syncPending: false,
       onboardingCompleted: true,
       darkMode: false,
+      easyMode: false,
       highContrast: false,
       screenReaderEnabled: false,
       soundEnabled: true,
       hapticsEnabled: true,
       currentPlayingLevelId: 1,
       boostersCount: {
-        hammer: 3,
-        shuffle: 3,
-        rainbow: 2,
-        hint: 3,
-        undo: 2,
+        hammer: 15,
+        shuffle: 15,
+        rainbow: 15,
+        hint: 15,
+        undo: 15,
       },
       achievements: [
         { id: 'first_match', title: 'First Match', description: 'Make your first crystal match!', isUnlocked: false, icon: '✨', rewardType: 'coins', rewardValue: 100 },

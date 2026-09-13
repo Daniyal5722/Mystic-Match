@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sparkles, Play, Award, Zap, Flame, Map, Trophy, Gem, Coins, Swords, Shield, ChevronRight } from 'lucide-react';
+import { Sparkles, Play, Award, Zap, Map, Trophy, Swords, Shield, ChevronRight } from 'lucide-react';
 import { GameState } from '../types';
 
 interface HomeViewProps {

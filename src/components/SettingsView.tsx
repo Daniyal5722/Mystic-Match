@@ -7,14 +7,10 @@ import {
   Wifi,
   WifiOff,
   Bell,
-  RefreshCw,
-  Trash2,
   Volume2,
-  VolumeX,
-  Volume,
-  BookOpen,
   User,
-  Check
+  Check,
+  Sparkles
 } from 'lucide-react';
 import { GameState } from '../types';
 
@@ -74,6 +70,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       return { ...prev, darkMode: nextMode };
     });
     triggerPushNotification('System Theme Changed', 'Dark mode is now updated.');
+  };
+
+  const toggleEasyMode = () => {
+    triggerHaptic();
+    setGameState((prev) => {
+      const nextEasy = !prev.easyMode;
+      return { ...prev, easyMode: nextEasy };
+    });
+    if (!gameState.easyMode) {
+      triggerPushNotification('Easy Mode Activated 🌟', 'Targets are lowered and moves are increased!');
+    } else {
+      triggerPushNotification('Normal Mode Activated 🔮', 'Standard difficulty goals restored.');
+    }
   };
 
   const toggleHighContrast = () => {
@@ -209,6 +218,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             checked={gameState.darkMode}
             onChange={toggleDarkMode}
             className="w-5 h-5 accent-cyan-400 cursor-pointer"
+          />
+        </div>
+
+        {/* Easy Mode Toggle */}
+        <div className="bg-[#142054]/90 border border-emerald-400/30 rounded-xl p-3 flex items-center justify-between shadow-[0_2px_12px_rgba(16,185,129,0.05)]">
+          <div className="flex items-center gap-2.5">
+            <Sparkles size={16} className="text-emerald-400 animate-pulse" />
+            <div>
+              <h5 className="font-headline font-bold text-xs uppercase leading-none text-emerald-300">Easy Mode</h5>
+              <p className="text-[10px] text-emerald-100/70 mt-0.5">Fewer target requirements and 60 moves per game</p>
+            </div>
+          </div>
+          <input
+            type="checkbox"
+            checked={!!gameState.easyMode}
+            onChange={toggleEasyMode}
+            className="w-5 h-5 accent-emerald-400 cursor-pointer"
           />
         </div>
 

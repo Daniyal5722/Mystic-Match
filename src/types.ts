@@ -49,6 +49,7 @@ export interface GameState {
   syncPending: boolean;
   onboardingCompleted: boolean;
   darkMode: boolean;
+  easyMode: boolean;
   highContrast: boolean;
   screenReaderEnabled: boolean;
   soundEnabled: boolean;
