@@ -1,0 +1,6 @@
+{
+  "name": "Mystic Match",
+  "description": "A high-fidelity, mobile-first match-3 puzzle game with a premium fantasy theme, level map, and smooth animations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
