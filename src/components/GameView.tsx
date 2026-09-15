@@ -10,9 +10,11 @@ import {
   Clock,
   RotateCcw,
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  ShoppingBag,
+  Sparkles
 } from 'lucide-react';
-import { GameState, GemType, BoardGem, ActiveLevelSession } from '../types';
+import { GameState, GemType, BoardGem, ActiveLevelSession, BoosterType } from '../types';
 import { ConfirmationModal } from './ConfirmationModal';
 
 interface GameViewProps {
@@ -20,13 +22,15 @@ interface GameViewProps {
   setTab: (tab: 'home' | 'map' | 'game' | 'settings') => void;
   triggerHaptic: (type?: 'swap' | 'match' | 'win' | 'lose' | 'click' | 'booster') => void;
   triggerPushNotification: (title: string, msg: string) => void;
-  onGameEnd: (won: boolean, score: number) => void;
-  onUpdateBoosters: (boosters: { hammer: number; shuffle: number; rainbow: number }) => void;
+  onGameEnd: (won: boolean, score: number, perfectRun?: boolean) => void;
+  onUpdateBoosters: (boosters: GameState['boostersCount']) => void;
   onSetLevelInProgress?: (inProgress: boolean) => void;
+  onOpenShop?: () => void;
+  onMatchMade?: (count: number) => void;
 }
 
 const BOARD_SIZE = 8;
-const GEM_TYPES: GemType[] = ['ruby', 'sapphire', 'emerald', 'topaz', 'amethyst'];
+const ALL_GEM_TYPES: GemType[] = ['ruby', 'sapphire', 'emerald', 'topaz', 'amethyst', 'prism'];
 const ACTIVE_LEVEL_STORAGE_KEY = 'mystic_match_active_level_v1';
 
 const GEM_STYLES: Record<GemType, { bg: string; icon: string; text: string; shadow: string; glow: string; border: string; colorHex: string }> = {
@@ -86,7 +90,12 @@ const GEM_STYLES: Record<GemType, { bg: string; icon: string; text: string; shad
   },
 };
 
-const getRandomGemType = (): GemType => GEM_TYPES[Math.floor(Math.random() * GEM_TYPES.length)];
+interface MoveSnapshot {
+  board: BoardGem[][];
+  score: number;
+  movesLeft: number;
+  gemsCollected: number;
+}
 
 const WinParticleCanvas: React.FC<{ active: boolean }> = ({ active }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -163,6 +172,8 @@ export const GameView: React.FC<GameViewProps> = ({
   onGameEnd,
   onUpdateBoosters,
   onSetLevelInProgress,
+  onOpenShop,
+  onMatchMade,
 }) => {
   const currentLevelId = gameState.currentPlayingLevelId || 1;
   const levelData = useMemo(() => gameState.levels.find(l => l.id === currentLevelId), [gameState.levels, currentLevelId]);
@@ -198,6 +209,17 @@ export const GameView: React.FC<GameViewProps> = ({
   }, [currentDifficulty, rawTarget]);
 
   const objectiveType = levelData?.objectiveType || 'sapphire';
+
+  // CRITICAL FIX FOR LEVEL AUDIT / SOLVABILITY:
+  // Ensure the board generator pool ALWAYS includes the objectiveType so target gems spawn in every level (1-50)!
+  const levelGemPool = useMemo<GemType[]>(() => {
+    const others = ALL_GEM_TYPES.filter(t => t !== objectiveType);
+    return [objectiveType, ...others.slice(0, 4)];
+  }, [objectiveType]);
+
+  const getRandomGemType = useCallback((): GemType => {
+    return levelGemPool[Math.floor(Math.random() * levelGemPool.length)];
+  }, [levelGemPool]);
   
   const [board, setBoard] = useState<BoardGem[][]>([]);
   const [selectedGem, setSelectedGem] = useState<BoardGem | null>(null);
@@ -223,7 +245,11 @@ export const GameView: React.FC<GameViewProps> = ({
   const [leaveTargetTab, setLeaveTargetTab] = useState<'home' | 'map' | 'settings'>('map');
 
   // Power Boosters State
-  const [boosterActive, setBoosterActive] = useState<'hammer' | 'shuffle' | 'rainbow' | null>(null);
+  const [boosterActive, setBoosterActive] = useState<BoosterType | null>(null);
+  const [hintPair, setHintPair] = useState<{ g1: { row: number; col: number }; g2: { row: number; col: number } } | null>(null);
+  const [lastMoveSnapshot, setLastMoveSnapshot] = useState<MoveSnapshot | null>(null);
+  const usedBoosterInLevelRef = useRef<boolean>(false);
+
   const boostersCount = gameState.boostersCount;
 
   // Track the active session key loaded so tab switching doesn't reset it
@@ -235,6 +261,36 @@ export const GameView: React.FC<GameViewProps> = ({
     const secs = totalSec % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const findAndMarkMatches = useCallback((currentBoard: BoardGem[][], mark: boolean = true): { row: number; col: number }[] => {
+    const matchedCoords: Set<string> = new Set();
+    // Horizontal
+    for (let r = 0; r < BOARD_SIZE; r++) {
+      for (let c = 0; c < BOARD_SIZE - 2; c++) {
+        const type = currentBoard[r][c].type;
+        if (type && currentBoard[r][c + 1].type === type && currentBoard[r][c + 2].type === type) {
+          matchedCoords.add(`${r},${c}`);
+          matchedCoords.add(`${r},${c + 1}`);
+          matchedCoords.add(`${r},${c + 2}`);
+        }
+      }
+    }
+    // Vertical
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      for (let r = 0; r < BOARD_SIZE - 2; r++) {
+        const type = currentBoard[r][c].type;
+        if (type && currentBoard[r + 1][c].type === type && currentBoard[r + 2][c].type === type) {
+          matchedCoords.add(`${r},${c}`);
+          matchedCoords.add(`${r + 1},${c}`);
+          matchedCoords.add(`${r + 2},${c}`);
+        }
+      }
+    }
+    return Array.from(matchedCoords).map((coord) => {
+      const [r, c] = coord.split(',').map(Number);
+      return { row: r, col: c };
+    });
+  }, []);
 
   const checkPossibleMoves = useCallback((currentBoard: BoardGem[][]) => {
     // Check horizontal swaps
@@ -264,37 +320,36 @@ export const GameView: React.FC<GameViewProps> = ({
       }
     }
     return false;
-  }, []);
+  }, [findAndMarkMatches]);
 
-  const findAndMarkMatches = (currentBoard: BoardGem[][], mark: boolean = true): { row: number; col: number }[] => {
-    const matchedCoords: Set<string> = new Set();
-    // Horizontal
+  // Hint Search Helper
+  const findHintMovePair = useCallback((currentBoard: BoardGem[][]): { g1: { row: number; col: number }; g2: { row: number; col: number } } | null => {
     for (let r = 0; r < BOARD_SIZE; r++) {
-      for (let c = 0; c < BOARD_SIZE - 2; c++) {
-        const type = currentBoard[r][c].type;
-        if (type && currentBoard[r][c + 1].type === type && currentBoard[r][c + 2].type === type) {
-          matchedCoords.add(`${r},${c}`);
-          matchedCoords.add(`${r},${c + 1}`);
-          matchedCoords.add(`${r},${c + 2}`);
+      for (let c = 0; c < BOARD_SIZE; c++) {
+        // Swap horizontal
+        if (c < BOARD_SIZE - 1) {
+          const testBoard = currentBoard.map(row => row.map(g => ({ ...g })));
+          const temp = testBoard[r][c].type;
+          testBoard[r][c].type = testBoard[r][c + 1].type;
+          testBoard[r][c + 1].type = temp;
+          if (findAndMarkMatches(testBoard, false).length > 0) {
+            return { g1: { row: r, col: c }, g2: { row: r, col: c + 1 } };
+          }
+        }
+        // Swap vertical
+        if (r < BOARD_SIZE - 1) {
+          const testBoard = currentBoard.map(row => row.map(g => ({ ...g })));
+          const temp = testBoard[r][c].type;
+          testBoard[r][c].type = testBoard[r + 1][c].type;
+          testBoard[r + 1][c].type = temp;
+          if (findAndMarkMatches(testBoard, false).length > 0) {
+            return { g1: { row: r, col: c }, g2: { row: r + 1, col: c } };
+          }
         }
       }
     }
-    // Vertical
-    for (let c = 0; c < BOARD_SIZE; c++) {
-      for (let r = 0; r < BOARD_SIZE - 2; r++) {
-        const type = currentBoard[r][c].type;
-        if (type && currentBoard[r + 1][c].type === type && currentBoard[r + 2][c].type === type) {
-          matchedCoords.add(`${r},${c}`);
-          matchedCoords.add(`${r + 1},${c}`);
-          matchedCoords.add(`${r + 2},${c}`);
-        }
-      }
-    }
-    return Array.from(matchedCoords).map((coord) => {
-      const [r, c] = coord.split(',').map(Number);
-      return { row: r, col: c };
-    });
-  };
+    return null;
+  }, [findAndMarkMatches]);
 
   // Safe Session Persistence Functions
   const saveCurrentSession = useCallback((
@@ -399,6 +454,9 @@ export const GameView: React.FC<GameViewProps> = ({
     setGameResult(null);
     setComboText(null);
     setIsPaused(false);
+    setHintPair(null);
+    setLastMoveSnapshot(null);
+    usedBoosterInLevelRef.current = false;
     onSetLevelInProgress?.(true);
 
     // Save newly initialized level state immediately
@@ -419,7 +477,7 @@ export const GameView: React.FC<GameViewProps> = ({
     } catch (e) {
       // safe fallback
     }
-  }, [checkPossibleMoves, startingMoves, currentLevelId, currentDifficulty, objectiveTarget, objectiveType, onSetLevelInProgress]);
+  }, [checkPossibleMoves, findAndMarkMatches, getRandomGemType, startingMoves, currentLevelId, currentDifficulty, objectiveTarget, objectiveType, onSetLevelInProgress]);
 
   // Load from saved session or initialize a fresh board
   useEffect(() => {
@@ -493,6 +551,9 @@ export const GameView: React.FC<GameViewProps> = ({
   const handleGemClick = (gem: BoardGem) => {
     if (isProcessing || gameResult || isPaused || isLeaveConfirmOpen || isRestartConfirmOpen) return;
 
+    // Clear hint glow on user action
+    if (hintPair) setHintPair(null);
+
     if (boosterActive === 'hammer') {
       triggerHammerSmash(gem);
       return;
@@ -527,7 +588,7 @@ export const GameView: React.FC<GameViewProps> = ({
 
     const newBoard = board.map(row => row.map(g => ({ ...g })));
     
-    // Swap object references for Framer Motion layout tracking
+    // Swap
     const g1 = newBoard[gem1.row][gem1.col];
     const g2 = newBoard[gem2.row][gem2.col];
     
@@ -542,6 +603,14 @@ export const GameView: React.FC<GameViewProps> = ({
     const matches = findAndMarkMatches(newBoard);
 
     if (matches.length > 0) {
+      // Record undo snapshot BEFORE finalizing state changes
+      setLastMoveSnapshot({
+        board: board.map(row => row.map(g => ({ ...g }))),
+        score: scoreRef.current,
+        movesLeft: movesLeftRef.current,
+        gemsCollected: gemsCollectedRef.current,
+      });
+
       setBoard(newBoard);
       setSelectedGem(null);
       const nextMoves = movesLeft - 1;
@@ -592,6 +661,7 @@ export const GameView: React.FC<GameViewProps> = ({
     });
 
     triggerHaptic('match');
+    onMatchMade?.(1);
 
     const matchScore = matched.length * 50;
     scoreRef.current += matchScore;
@@ -631,7 +701,7 @@ export const GameView: React.FC<GameViewProps> = ({
         }
       }
       
-      // Generate new gems
+      // Generate new gems using levelGemPool (always contains objectiveType)
       for (let r = emptyRow; r >= 0; r--) {
         nextBoard[r][c] = {
           id: `${r}-${c}-${Math.random().toString(36).substring(2, 6)}`,
@@ -660,21 +730,22 @@ export const GameView: React.FC<GameViewProps> = ({
           triggerHaptic('win');
           clearCurrentSession();
           onSetLevelInProgress?.(false);
-          onGameEnd(true, scoreRef.current);
+          const perfect = !usedBoosterInLevelRef.current;
+          onGameEnd(true, scoreRef.current, perfect);
           triggerPushNotification('Stage Clear!', `You collected ${objectiveTarget} ${objectiveType}s! Score: ${scoreRef.current}`);
         } else if (movesLeftRef.current <= 0) {
           setGameResult('lost');
           triggerHaptic('lose');
           clearCurrentSession();
           onSetLevelInProgress?.(false);
-          onGameEnd(false, scoreRef.current);
+          onGameEnd(false, scoreRef.current, false);
           triggerPushNotification('Game Over', 'You ran out of moves! Try again.');
         } else {
           // Safe game-state checkpoint save
           saveCurrentSession(finalBoard);
 
           if (!checkPossibleMoves(finalBoard)) {
-            // Shuffle check
+            // Automatic safe reshuffle when no moves are possible
             triggerHaptic('booster');
             setComboText('SHUFFLING...');
             setTimeout(() => {
@@ -696,31 +767,103 @@ export const GameView: React.FC<GameViewProps> = ({
     saveCurrentSession(nextBoard);
   };
 
-  const activateBooster = (type: 'hammer' | 'shuffle' | 'rainbow') => {
+  // FULL BOOSTER ENGINE (Hint, Shuffle, Undo, Hammer, Rainbow/Magic Match)
+  const activateBooster = (type: BoosterType) => {
     if (isProcessing || gameResult || isPaused || isLeaveConfirmOpen || isRestartConfirmOpen) return;
     triggerHaptic('click');
 
+    // 1. HAMMER
     if (type === 'hammer') {
-      if (boostersCount.hammer <= 0) return;
+      if (boostersCount.hammer <= 0) {
+        onOpenShop?.();
+        return;
+      }
       setBoosterActive(boosterActive === 'hammer' ? null : 'hammer');
+      return;
     }
 
+    // 2. SHUFFLE
     if (type === 'shuffle') {
-      if (boostersCount.shuffle <= 0) return;
+      if (boostersCount.shuffle <= 0) {
+        onOpenShop?.();
+        return;
+      }
+      usedBoosterInLevelRef.current = true;
       onUpdateBoosters({ ...boostersCount, shuffle: boostersCount.shuffle - 1 });
       triggerHaptic('booster');
       shuffleBoard();
       setComboText('SHUFFLED!');
       setTimeout(() => setComboText(null), 700);
+      return;
     }
 
+    // 3. HINT
+    if (type === 'hint') {
+      if (boostersCount.hint <= 0) {
+        onOpenShop?.();
+        return;
+      }
+      const pair = findHintMovePair(board);
+      if (pair) {
+        usedBoosterInLevelRef.current = true;
+        onUpdateBoosters({ ...boostersCount, hint: boostersCount.hint - 1 });
+        triggerHaptic('booster');
+        setHintPair(pair);
+        setComboText('HINT: SWAP HIGHLIGHTED TILES!');
+        setTimeout(() => setComboText(null), 2000);
+        setTimeout(() => setHintPair(null), 5000);
+      } else {
+        shuffleBoard();
+      }
+      return;
+    }
+
+    // 4. UNDO
+    if (type === 'undo') {
+      if (boostersCount.undo <= 0) {
+        onOpenShop?.();
+        return;
+      }
+      if (!lastMoveSnapshot) {
+        setComboText('NO PREVIOUS MOVE');
+        setTimeout(() => setComboText(null), 900);
+        return;
+      }
+      usedBoosterInLevelRef.current = true;
+      onUpdateBoosters({ ...boostersCount, undo: boostersCount.undo - 1 });
+      triggerHaptic('booster');
+
+      setBoard(lastMoveSnapshot.board);
+      setScore(lastMoveSnapshot.score);
+      setMovesLeft(lastMoveSnapshot.movesLeft);
+      setGemsCollected(lastMoveSnapshot.gemsCollected);
+
+      scoreRef.current = lastMoveSnapshot.score;
+      movesLeftRef.current = lastMoveSnapshot.movesLeft;
+      gemsCollectedRef.current = lastMoveSnapshot.gemsCollected;
+
+      saveCurrentSession(lastMoveSnapshot.board, lastMoveSnapshot.score, lastMoveSnapshot.movesLeft, lastMoveSnapshot.gemsCollected);
+      setLastMoveSnapshot(null);
+      setComboText('MOVE UNDONE!');
+      setTimeout(() => setComboText(null), 1000);
+      return;
+    }
+
+    // 5. RAINBOW / MAGIC MATCH
     if (type === 'rainbow') {
-      if (boostersCount.rainbow <= 0) return;
+      if (boostersCount.rainbow <= 0) {
+        onOpenShop?.();
+        return;
+      }
+      usedBoosterInLevelRef.current = true;
       onUpdateBoosters({ ...boostersCount, rainbow: boostersCount.rainbow - 1 });
       triggerHaptic('booster');
+
       const nextBoard = board.map(row => row.map(g => ({ ...g })));
       for (let i = 0; i < 4; i++) {
-        nextBoard[Math.floor(Math.random() * BOARD_SIZE)][Math.floor(Math.random() * BOARD_SIZE)].type = objectiveType;
+        const targetR = Math.floor(Math.random() * BOARD_SIZE);
+        const targetC = Math.floor(Math.random() * BOARD_SIZE);
+        nextBoard[targetR][targetC].type = objectiveType;
       }
       setBoard(nextBoard);
       setComboText('RAINBOW SURGE!');
@@ -734,11 +877,13 @@ export const GameView: React.FC<GameViewProps> = ({
           saveCurrentSession(nextBoard);
         }
       }, 700);
+      return;
     }
   };
 
   const triggerHammerSmash = (gem: BoardGem) => {
     setBoosterActive(null);
+    usedBoosterInLevelRef.current = true;
     onUpdateBoosters({ ...boostersCount, hammer: boostersCount.hammer - 1 });
     triggerHaptic('booster');
     setIsProcessing(true);
@@ -758,7 +903,7 @@ export const GameView: React.FC<GameViewProps> = ({
     }, 400);
   };
 
-  // Safe exit confirmation handling
+  // Safe exit confirmation handling (never silently discard in-progress level)
   const handleRequestLeave = (target: 'home' | 'map' | 'settings') => {
     triggerHaptic('click');
     if (!gameResult) {
@@ -801,7 +946,7 @@ export const GameView: React.FC<GameViewProps> = ({
   return (
     <div className="flex flex-col w-full h-full justify-between select-none relative z-10 text-white max-w-full min-w-0">
       {/* Header with Navigation and Stage Title */}
-      <div className="flex items-center justify-between mb-2 sm:mb-2.5 shrink-0">
+      <div className="flex items-center justify-between mb-1.5 sm:mb-2 shrink-0">
         <button
           type="button"
           onClick={() => handleRequestLeave('map')}
@@ -838,14 +983,14 @@ export const GameView: React.FC<GameViewProps> = ({
       </div>
 
       {/* Top Objective Card */}
-      <div className="flex flex-col gap-1.5 sm:gap-2 mb-2 shrink-0">
-        <div className={`card-glowing-${objectiveType === 'ruby' ? 'rose' : 'cyan'} bg-gradient-to-r from-[#121c47] to-[#101b44] p-2 sm:p-2.5 rounded-xl flex items-center justify-between border-2 border-indigo-400/50 shadow-[0_4px_15px_rgba(0,0,0,0.3)]`}>
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center font-headline font-black text-lg sm:text-xl border ${objectiveStyle.border} bg-gradient-to-b ${objectiveStyle.bg} shadow-md shrink-0`}>
+      <div className="flex flex-col gap-1 sm:gap-1.5 mb-1.5 shrink-0">
+        <div className={`card-glowing-${objectiveType === 'ruby' ? 'rose' : 'cyan'} bg-gradient-to-r from-[#121c47] to-[#101b44] p-1.5 sm:p-2 rounded-xl flex items-center justify-between border-2 border-indigo-400/50 shadow-[0_4px_15px_rgba(0,0,0,0.3)]`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-headline font-black text-base sm:text-lg border ${objectiveStyle.border} bg-gradient-to-b ${objectiveStyle.bg} shadow-md shrink-0`}>
               {objectiveStyle.icon}
             </div>
             <div className="min-w-0">
-              <p className="text-[8px] sm:text-[9px] font-headline uppercase tracking-wider text-indigo-300 leading-none mb-0.5 truncate">
+              <p className="text-[7px] sm:text-[8px] font-headline uppercase tracking-wider text-indigo-300 leading-none mb-0.5 truncate">
                 Mission Objective
               </p>
               <p className="text-xs sm:text-sm font-headline font-black text-white leading-none truncate">
@@ -859,46 +1004,51 @@ export const GameView: React.FC<GameViewProps> = ({
         </div>
 
         {/* 3-Column Stats Grid: Score, Moves, Time */}
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
           {/* Score Stat */}
-          <div className="bg-gradient-to-b from-[#2a1e0b] to-[#1a1306] p-1.5 sm:p-2 border-2 border-amber-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(251,191,36,0.15)] min-w-0">
+          <div className="bg-gradient-to-b from-[#2a1e0b] to-[#1a1306] p-1.5 border-2 border-amber-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(251,191,36,0.15)] min-w-0">
             <div className="min-w-0">
               <p className="text-[7px] sm:text-[8px] font-headline uppercase tracking-wider text-amber-300/80 leading-none">Score</p>
-              <h3 className="text-xs sm:text-sm md:text-base font-headline font-black text-amber-300 leading-none mt-0.5 truncate">{score.toLocaleString()}</h3>
+              <h3 className="text-xs sm:text-sm font-headline font-black text-amber-300 leading-none mt-0.5 truncate">{score.toLocaleString()}</h3>
             </div>
-            <Trophy size={14} className="text-amber-400 shrink-0 ml-1 hidden xs:block" />
+            <Trophy size={13} className="text-amber-400 shrink-0 ml-1 hidden xs:block" />
           </div>
 
           {/* Moves Stat */}
-          <div className="bg-gradient-to-b from-[#0c244c] to-[#081733] p-1.5 sm:p-2 border-2 border-cyan-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(34,211,238,0.15)] min-w-0">
+          <div className="bg-gradient-to-b from-[#0c244c] to-[#081733] p-1.5 border-2 border-cyan-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(34,211,238,0.15)] min-w-0">
             <div className="min-w-0">
               <p className="text-[7px] sm:text-[8px] font-headline uppercase tracking-wider text-cyan-300/80 leading-none">Moves</p>
-              <h3 className={`text-xs sm:text-sm md:text-base font-headline font-black leading-none mt-0.5 truncate ${movesLeft <= 5 ? 'text-rose-400 animate-pulse' : 'text-cyan-300'}`}>
+              <h3 className={`text-xs sm:text-sm font-headline font-black leading-none mt-0.5 truncate ${movesLeft <= 5 ? 'text-rose-400 animate-pulse' : 'text-cyan-300'}`}>
                 {movesLeft}
               </h3>
             </div>
-            <Zap size={14} className="text-cyan-400 shrink-0 ml-1 hidden xs:block" />
+            <Zap size={13} className="text-cyan-400 shrink-0 ml-1 hidden xs:block" />
           </div>
 
           {/* Time Stat */}
-          <div className="bg-gradient-to-b from-[#211145] to-[#130b2c] p-1.5 sm:p-2 border-2 border-purple-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(168,85,247,0.15)] min-w-0">
+          <div className="bg-gradient-to-b from-[#211145] to-[#130b2c] p-1.5 border-2 border-purple-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(168,85,247,0.15)] min-w-0">
             <div className="min-w-0">
               <p className="text-[7px] sm:text-[8px] font-headline uppercase tracking-wider text-purple-300/80 leading-none">Time</p>
-              <h3 className="text-xs sm:text-sm md:text-base font-headline font-black text-purple-300 leading-none mt-0.5 truncate font-mono">
+              <h3 className="text-xs sm:text-sm font-headline font-black text-purple-300 leading-none mt-0.5 truncate font-mono">
                 {formatTime(elapsedSeconds)}
               </h3>
             </div>
-            <Clock size={14} className="text-purple-400 shrink-0 ml-1 hidden xs:block" />
+            <Clock size={13} className="text-purple-400 shrink-0 ml-1 hidden xs:block" />
           </div>
         </div>
       </div>
 
-      {/* Main 8x8 Board (Scales proportionally to viewport, prevents mobile overflow) */}
-      <div className="relative w-full max-w-[min(100%,min(50vh,370px))] aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden shrink-0 touch-manipulation">
+      {/* Main 8x8 Board (Responsive: scaled to fit mobile viewports cleanly) */}
+      <div className="relative w-full max-w-[min(100%,min(45vh,350px))] aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden shrink-0 touch-manipulation">
         <div id="game-board-grid" className="grid grid-cols-8 grid-rows-8 w-full h-full gap-0.5 sm:gap-1 touch-none">
-          {board.map(row => row.map(gem => {
-            const style = GEM_STYLES[gem.type];
+          {board.map((row, rIdx) => row.map((gem, cIdx) => {
+            const style = GEM_STYLES[gem.type] || GEM_STYLES.sapphire;
             const isSelected = selectedGem?.id === gem.id;
+            const isHinted = hintPair && (
+              (hintPair.g1.row === rIdx && hintPair.g1.col === cIdx) ||
+              (hintPair.g2.row === rIdx && hintPair.g2.col === cIdx)
+            );
+
             return (
               <div
                 key={gem.id}
@@ -913,10 +1063,12 @@ export const GameView: React.FC<GameViewProps> = ({
                       animate={{ scale: isSelected ? 0.85 : 1, opacity: 1, y: 0 }}
                       exit={{ scale: 0, opacity: 0 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 25, mass: 0.8 }}
-                      className={`w-full h-full rounded-md sm:rounded-lg bg-gradient-to-b ${style.bg} ${style.shadow} cursor-pointer relative flex items-center justify-center border ${style.border} overflow-hidden ${isSelected ? 'ring-2 ring-white z-10' : ''}`}
+                      className={`w-full h-full rounded-md sm:rounded-lg bg-gradient-to-b ${style.bg} ${style.shadow} cursor-pointer relative flex items-center justify-center border ${style.border} overflow-hidden ${
+                        isSelected ? 'ring-2 ring-white z-10' : ''
+                      } ${isHinted ? 'ring-2 ring-amber-400 animate-pulse scale-105 z-10' : ''}`}
                     >
                       <div className="absolute top-0.5 left-0.5 sm:left-1 w-2/3 h-1/3 bg-white/40 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />
-                      <span className="text-sm sm:text-xl md:text-2xl select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
+                      <span className="text-sm sm:text-xl select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -925,7 +1077,7 @@ export const GameView: React.FC<GameViewProps> = ({
           }))}
         </div>
 
-        {/* Small particle bursts for matches */}
+        {/* Particle bursts for matches */}
         {particleBursts.map(burst => (
           <motion.div
             key={burst.id}
@@ -953,7 +1105,7 @@ export const GameView: React.FC<GameViewProps> = ({
               animate={{ scale: 1.1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: -15 }}
               transition={{ type: 'spring' }}
-              className="absolute pointer-events-none z-30 font-headline font-black text-base sm:text-lg text-amber-300 bg-[#0e163b]/95 px-4 py-1.5 rounded-xl border-2 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.7)] uppercase tracking-wider"
+              className="absolute pointer-events-none z-30 font-headline font-black text-sm sm:text-base text-amber-300 bg-[#0e163b]/95 px-3.5 py-1.5 rounded-xl border-2 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.7)] uppercase tracking-wider"
             >
               {comboText}
             </motion.div>
@@ -961,49 +1113,99 @@ export const GameView: React.FC<GameViewProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Dynamic gameplay hint text */}
-      <div className="text-center my-1 sm:my-1.5 shrink-0 px-1">
+      {/* Dynamic hint banner */}
+      <div className="text-center my-1 shrink-0 px-1">
         <p className="text-[8px] sm:text-[9px] font-headline uppercase tracking-widest text-cyan-300 font-bold leading-none animate-pulse truncate">
-          {boosterActive === 'hammer' ? '⚡ HAMMER ACTIVE — Tap any crystal to smash it!' : 'Tap adjacent crystals to form combos!'}
+          {boosterActive === 'hammer'
+            ? '⚡ HAMMER ACTIVE — Tap any crystal to smash it!'
+            : hintPair
+            ? '💡 HINT ACTIVE — Swap the highlighted crystals!'
+            : 'Tap adjacent crystals to form combos!'}
         </p>
       </div>
 
-      {/* Power Boosters Row */}
+      {/* Complete Power Boosters Suite: Hint, Shuffle, Undo, Hammer, Rainbow & Shop link */}
       <div className="shrink-0 mt-auto pt-0.5 pb-1">
         <div className="flex items-center justify-between mb-1 px-1">
           <p className="text-[8px] sm:text-[9px] font-headline font-bold uppercase tracking-wider text-violet-300">Power Boosters</p>
-          <span className="text-[7px] sm:text-[8px] text-cyan-300 font-bold">Tap booster then tile</span>
+          {onOpenShop && (
+            <button
+              type="button"
+              onClick={() => { triggerHaptic('click'); onOpenShop(); }}
+              className="text-[8px] sm:text-[9px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <ShoppingBag size={11} /> + Emporium
+            </button>
+          )}
         </div>
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-5 gap-1">
+          {/* 1. Hint */}
           <button
             type="button"
-            onClick={() => activateBooster('hammer')}
-            disabled={boostersCount.hammer <= 0 || isProcessing || isPaused}
-            className={`flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-xl bg-[#121c47] border-2 transition-all cursor-pointer min-h-[48px] sm:min-h-[52px] ${boosterActive === 'hammer' ? 'border-cyan-400 bg-cyan-950/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] scale-105' : 'border-indigo-400/40 hover:border-indigo-300'} disabled:opacity-50`}
+            onClick={() => activateBooster('hint')}
+            disabled={isProcessing || isPaused}
+            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-amber-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px]"
+            title="Hint: Highlights a guaranteed match"
           >
-            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-amber-500/20 border border-amber-400/50 flex items-center justify-center mb-0.5 text-xs sm:text-sm">🔨</div>
-            <span className="font-headline font-bold text-[8px] sm:text-[9px] uppercase text-white leading-none">Hammer</span>
-            <span className="text-[7px] sm:text-[8px] text-amber-300 font-bold mt-0.5">{boostersCount.hammer} Left</span>
+            <div className="w-5 h-5 rounded-lg bg-yellow-500/20 border border-yellow-400/50 flex items-center justify-center mb-0.5 text-xs">💡</div>
+            <span className="font-headline font-bold text-[7px] sm:text-[8px] uppercase text-white leading-none">Hint</span>
+            <span className="text-[6.5px] sm:text-[7.5px] text-amber-300 font-bold mt-0.5">{boostersCount.hint}</span>
           </button>
+
+          {/* 2. Shuffle */}
           <button
             type="button"
             onClick={() => activateBooster('shuffle')}
-            disabled={boostersCount.shuffle <= 0 || isProcessing || isPaused}
-            className="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-xl bg-[#121c47] border-2 border-indigo-400/40 hover:border-indigo-300 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[48px] sm:min-h-[52px]"
+            disabled={isProcessing || isPaused}
+            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-purple-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px]"
+            title="Shuffle: Rearranges all board tiles"
           >
-            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-purple-500/20 border border-purple-400/50 flex items-center justify-center mb-0.5 text-xs sm:text-sm">🔄</div>
-            <span className="font-headline font-bold text-[8px] sm:text-[9px] uppercase text-white leading-none">Shuffle</span>
-            <span className="text-[7px] sm:text-[8px] text-purple-300 font-bold mt-0.5">{boostersCount.shuffle} Left</span>
+            <div className="w-5 h-5 rounded-lg bg-purple-500/20 border border-purple-400/50 flex items-center justify-center mb-0.5 text-xs">🔄</div>
+            <span className="font-headline font-bold text-[7px] sm:text-[8px] uppercase text-white leading-none">Shuffle</span>
+            <span className="text-[6.5px] sm:text-[7.5px] text-purple-300 font-bold mt-0.5">{boostersCount.shuffle}</span>
           </button>
+
+          {/* 3. Undo */}
+          <button
+            type="button"
+            onClick={() => activateBooster('undo')}
+            disabled={isProcessing || isPaused || !lastMoveSnapshot}
+            className={`flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border transition-all cursor-pointer active:scale-95 min-h-[46px] ${
+              lastMoveSnapshot ? 'border-cyan-400/60 hover:border-cyan-300' : 'border-indigo-400/20 opacity-40'
+            }`}
+            title="Undo: Reverses your most recent move"
+          >
+            <div className="w-5 h-5 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center mb-0.5 text-xs">⏪</div>
+            <span className="font-headline font-bold text-[7px] sm:text-[8px] uppercase text-white leading-none">Undo</span>
+            <span className="text-[6.5px] sm:text-[7.5px] text-cyan-300 font-bold mt-0.5">{boostersCount.undo}</span>
+          </button>
+
+          {/* 4. Hammer */}
+          <button
+            type="button"
+            onClick={() => activateBooster('hammer')}
+            disabled={isProcessing || isPaused}
+            className={`flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border transition-all cursor-pointer min-h-[46px] ${
+              boosterActive === 'hammer' ? 'border-cyan-400 bg-cyan-950/50 shadow-[0_0_12px_rgba(34,211,238,0.4)] scale-105' : 'border-indigo-400/40 hover:border-amber-400'
+            } disabled:opacity-50`}
+            title="Hammer: Smashes one selected tile"
+          >
+            <div className="w-5 h-5 rounded-lg bg-amber-500/20 border border-amber-400/50 flex items-center justify-center mb-0.5 text-xs">🔨</div>
+            <span className="font-headline font-bold text-[7px] sm:text-[8px] uppercase text-white leading-none">Hammer</span>
+            <span className="text-[6.5px] sm:text-[7.5px] text-amber-300 font-bold mt-0.5">{boostersCount.hammer}</span>
+          </button>
+
+          {/* 5. Rainbow / Magic Match */}
           <button
             type="button"
             onClick={() => activateBooster('rainbow')}
-            disabled={boostersCount.rainbow <= 0 || isProcessing || isPaused}
-            className="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-xl bg-[#121c47] border-2 border-indigo-400/40 hover:border-indigo-300 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[48px] sm:min-h-[52px]"
+            disabled={isProcessing || isPaused}
+            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-pink-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px]"
+            title="Magic Match: Transforms 4 tiles to the objective gem"
           >
-            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-pink-500/20 border border-pink-400/50 flex items-center justify-center mb-0.5 text-xs sm:text-sm">🌈</div>
-            <span className="font-headline font-bold text-[8px] sm:text-[9px] uppercase text-white leading-none">Rainbow</span>
-            <span className="text-[7px] sm:text-[8px] text-pink-300 font-bold mt-0.5">{boostersCount.rainbow} Left</span>
+            <div className="w-5 h-5 rounded-lg bg-pink-500/20 border border-pink-400/50 flex items-center justify-center mb-0.5 text-xs">🌈</div>
+            <span className="font-headline font-bold text-[7px] sm:text-[8px] uppercase text-white leading-none">Magic</span>
+            <span className="text-[6.5px] sm:text-[7.5px] text-pink-300 font-bold mt-0.5">{boostersCount.rainbow}</span>
           </button>
         </div>
       </div>
@@ -1124,12 +1326,20 @@ export const GameView: React.FC<GameViewProps> = ({
                   ))}
                 </div>
               )}
-              <p className="text-xs font-semibold text-violet-200 mb-4 sm:mb-5 px-1 leading-relaxed">
+              <p className="text-xs font-semibold text-violet-200 mb-2 px-1 leading-relaxed">
                 {gameResult === 'won'
-                  ? `Spectacular! You gathered all ${objectiveTarget} ${objectiveType}s in ${formatTime(elapsedSeconds)} with a final score of ${score.toLocaleString()}!`
+                  ? `Spectacular! You gathered all ${objectiveTarget} ${objectiveType}s in ${formatTime(elapsedSeconds)} with a score of ${score.toLocaleString()}!`
                   : `You gathered ${gemsCollected}/${objectiveTarget} ${objectiveType}s in ${formatTime(elapsedSeconds)}. Swap tiles carefully to clear the mission next time!`}
               </p>
-              <div className="flex flex-col gap-2">
+
+              {/* Bonus badges */}
+              {gameResult === 'won' && !usedBoosterInLevelRef.current && (
+                <div className="inline-flex items-center gap-1 bg-amber-400/20 border border-amber-400/60 px-2.5 py-1 rounded-lg text-amber-300 font-headline font-bold text-[10px] mb-3">
+                  <Sparkles size={12} /> Perfect Run! (+Bonus Coins)
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 mt-2">
                 {gameResult === 'won' && (
                   <button
                     type="button"

@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Home, Map as MapIcon, Settings as SettingsIcon, WifiOff, Play, LogOut } from 'lucide-react';
-import { GameState, Level } from './types';
-import { INITIAL_LEVELS } from './data';
+import { GameState, BoosterType, BoosterShopItem, DailyLoginReward, Mission } from './types';
+import { INITIAL_LEVELS, DEFAULT_MISSIONS } from './data';
 import { PlayerSetupOverlay } from './components/PlayerSetupOverlay';
-import { OnboardingOverlay } from './components/OnboardingOverlay';
 import { PlayerProfileModal } from './components/PlayerProfileModal';
 import { HomeView } from './components/HomeView';
 import { MapView } from './components/MapView';
@@ -12,6 +11,10 @@ import { GameView } from './components/GameView';
 import { SettingsView } from './components/SettingsView';
 import { NotificationToast } from './components/NotificationToast';
 import { ConfirmationModal } from './components/ConfirmationModal';
+import { BoosterShopModal } from './components/BoosterShopModal';
+import { DailyLoginModal } from './components/DailyLoginModal';
+import { MissionsModal } from './components/MissionsModal';
+import { RewardedAdModal } from './components/RewardedAdModal';
 
 import { playSound } from './audio';
 
@@ -23,16 +26,19 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState>(() => {
     const defaultState: GameState = {
       name: '',
-      coins: 0,
-      diamonds: 0,
-      gemsCount: 0,
+      coins: 500, // Generous starting balance so players can try the Emporium immediately
+      diamonds: 20,
+      gemsCount: 20,
       score: 0,
-      level: 1, // Start at level 1 instead of 0 for correct progression
+      level: 1,
       xp: 0,
       xpMax: 1000,
       wins: 0,
       losses: 0,
       gamesPlayed: 0,
+      winStreak: 0,
+      totalMatchesMade: 0,
+      levelsWithoutBoosters: 0,
       activeTab: 'home',
       levels: INITIAL_LEVELS.map((lvl) => ({
         ...lvl,
@@ -53,12 +59,15 @@ export default function App() {
       hapticsEnabled: true,
       currentPlayingLevelId: 1,
       boostersCount: {
-        hammer: 15,
-        shuffle: 15,
-        rainbow: 15,
-        hint: 15,
-        undo: 15,
+        hammer: 3,
+        shuffle: 3,
+        rainbow: 3,
+        hint: 3,
+        undo: 3,
       },
+      missions: DEFAULT_MISSIONS,
+      dailyLoginDay: 1,
+      lastDailyLoginDate: null,
       achievements: [
         { id: 'first_match', title: 'First Match', description: 'Make your first crystal match!', isUnlocked: false, icon: '✨', rewardType: 'coins', rewardValue: 100 },
         { id: 'first_win', title: 'First Victory', description: 'Successfully clear your first puzzle stage!', isUnlocked: false, icon: '🏆', rewardType: 'diamonds', rewardValue: 10 },
@@ -74,7 +83,7 @@ export default function App() {
       const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
-        const syncedDiamonds = parsed.diamonds ?? parsed.gemsCount ?? 0;
+        const syncedDiamonds = parsed.diamonds ?? parsed.gemsCount ?? 20;
         const resolvedDifficulty = parsed.difficultyMode || (parsed.easyMode ? 'easy' : 'medium');
         return {
           ...defaultState,
@@ -85,6 +94,11 @@ export default function App() {
             ...defaultState.boostersCount,
             ...(parsed.boostersCount || {}),
           },
+          missions: parsed.missions?.length ? parsed.missions : defaultState.missions,
+          dailyLoginDay: parsed.dailyLoginDay || 1,
+          lastDailyLoginDate: parsed.lastDailyLoginDate ?? null,
+          winStreak: parsed.winStreak || 0,
+          totalMatchesMade: parsed.totalMatchesMade || 0,
           achievements: parsed.achievements?.length ? parsed.achievements : defaultState.achievements,
           lastClaimedDaily: parsed.lastClaimedDaily ?? null,
           diamonds: syncedDiamonds,
@@ -97,8 +111,12 @@ export default function App() {
     return defaultState;
   });
 
-  // Player Profile Modal state
+  // Modal States
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isDailyLoginOpen, setIsDailyLoginOpen] = useState(false);
+  const [isMissionsOpen, setIsMissionsOpen] = useState(false);
+  const [isRewardedAdOpen, setIsRewardedAdOpen] = useState(false);
 
   // Push Notification Toast
   const [activeNotification, setActiveNotification] = useState<{ title: string; message: string } | null>(null);
@@ -218,20 +236,131 @@ export default function App() {
     }
   }, [gameState.activeTab, isLevelInProgress]);
 
-  // Trigger Simulated Automatic offline progress synchronization
-  const triggerAutomaticSync = () => {
-    if (gameState.offline) return;
+  // Economy: Booster Shop Purchase Handler
+  const handleBuyBoosterItem = (item: BoosterShopItem) => {
+    setGameState((prev) => {
+      const nextCoins = prev.coins - (item.coinCost || 0);
+      const nextDiamonds = prev.diamonds - (item.diamondCost || 0);
+      const updatedBoosters = { ...prev.boostersCount };
 
-    triggerHapticFeedback();
-    triggerPushNotification(
-      'Synchronization Complete',
-      'Local player records and stage stars are synchronized.'
-    );
+      if (item.type === 'mega_bundle') {
+        updatedBoosters.hammer += 2;
+        updatedBoosters.shuffle += 2;
+        updatedBoosters.hint += 2;
+        updatedBoosters.undo += 2;
+        updatedBoosters.rainbow += 2;
+      } else {
+        const bType = item.type as BoosterType;
+        updatedBoosters[bType] = (updatedBoosters[bType] || 0) + item.quantity;
+      }
 
-    setGameState((prev) => ({
-      ...prev,
-      syncPending: false,
-    }));
+      return {
+        ...prev,
+        coins: nextCoins,
+        diamonds: nextDiamonds,
+        gemsCount: nextDiamonds,
+        boostersCount: updatedBoosters,
+      };
+    });
+    triggerPushNotification('Emporium Purchase', `Acquired ${item.name}! Added to your inventory.`);
+  };
+
+  // Economy: Daily Login Claim Handler
+  const handleClaimDailyLogin = (reward: DailyLoginReward) => {
+    const today = new Date().toISOString().split('T')[0];
+    setGameState((prev) => {
+      const updatedBoosters = { ...prev.boostersCount };
+      if (reward.boosters) {
+        Object.entries(reward.boosters).forEach(([key, val]) => {
+          const bKey = key as BoosterType;
+          if (val) updatedBoosters[bKey] = (updatedBoosters[bKey] || 0) + val;
+        });
+      }
+
+      // Update daily login mission
+      const updatedMissions = (prev.missions || []).map((m) => {
+        if (m.type === 'daily_login') {
+          return { ...m, current: 1, progress: 1, completed: true } as any;
+        }
+        return m;
+      });
+
+      return {
+        ...prev,
+        coins: prev.coins + reward.coins,
+        diamonds: prev.diamonds + (reward.diamonds || 0),
+        gemsCount: prev.gemsCount + (reward.diamonds || 0),
+        boostersCount: updatedBoosters,
+        dailyLoginDay: (reward.day % 7) + 1,
+        lastClaimedDaily: today,
+        lastDailyLoginDate: today,
+        missions: updatedMissions,
+      };
+    });
+    triggerPushNotification('Daily Calendar Claimed!', `Received +${reward.coins} Coins!`);
+  };
+
+  // Economy: Missions / Bounties Claim Handler
+  const handleClaimMission = (mission: Mission) => {
+    setGameState((prev) => {
+      const targetMission = prev.missions.find((m) => m.id === mission.id);
+      if (!targetMission || !targetMission.completed || targetMission.claimed) return prev;
+
+      const updatedBoosters = { ...prev.boostersCount };
+      if (mission.rewardBooster) {
+        const bType = mission.rewardBooster.type;
+        updatedBoosters[bType] = (updatedBoosters[bType] || 0) + mission.rewardBooster.count;
+      }
+
+      const updatedMissions = prev.missions.map((m) => {
+        if (m.id === mission.id) return { ...m, claimed: true };
+        return m;
+      });
+
+      return {
+        ...prev,
+        coins: prev.coins + mission.rewardCoins,
+        diamonds: prev.diamonds + (mission.rewardDiamonds || 0),
+        gemsCount: prev.gemsCount + (mission.rewardDiamonds || 0),
+        boostersCount: updatedBoosters,
+        missions: updatedMissions,
+      };
+    });
+    triggerPushNotification('Bounty Collected!', 'Reward deposited directly into your balance.');
+  };
+
+  // Economy: Rewarded Ad Simulation Grant
+  const handleRewardedAdGrant = (boosterType: BoosterType) => {
+    setGameState((prev) => {
+      const updatedBoosters = { ...prev.boostersCount };
+      updatedBoosters[boosterType] = (updatedBoosters[boosterType] || 0) + 1;
+      return {
+        ...prev,
+        coins: prev.coins + 50,
+        boostersCount: updatedBoosters,
+      };
+    });
+    triggerPushNotification('Mystic Broadcast Reward', `+1 ${boosterType.toUpperCase()} booster & +50 coins claimed!`);
+  };
+
+  // Mission Tracking: Match made
+  const handleMatchMade = (count: number) => {
+    setGameState((prev) => {
+      const nextTotal = (prev.totalMatchesMade || 0) + count;
+      const updatedMissions = (prev.missions || []).map((m) => {
+        if (m.type === 'match_gems') {
+          const nextCur = Math.min(m.target, m.current + count);
+          return { ...m, current: nextCur, completed: nextCur >= m.target };
+        }
+        return m;
+      });
+
+      return {
+        ...prev,
+        totalMatchesMade: nextTotal,
+        missions: updatedMissions,
+      };
+    });
   };
 
   // Reset progress logic
@@ -246,9 +375,9 @@ export default function App() {
     setIsLevelInProgress(false);
     setGameState({
       name: '',
-      coins: 0,
-      diamonds: 0,
-      gemsCount: 0,
+      coins: 500,
+      diamonds: 20,
+      gemsCount: 20,
       score: 0,
       level: 1,
       xp: 0,
@@ -256,6 +385,9 @@ export default function App() {
       wins: 0,
       losses: 0,
       gamesPlayed: 0,
+      winStreak: 0,
+      totalMatchesMade: 0,
+      levelsWithoutBoosters: 0,
       activeTab: 'home',
       levels: INITIAL_LEVELS.map((lvl) => ({
         ...lvl,
@@ -269,18 +401,22 @@ export default function App() {
       onboardingCompleted: true,
       darkMode: false,
       easyMode: false,
+      difficultyMode: 'medium',
       highContrast: false,
       screenReaderEnabled: false,
       soundEnabled: true,
       hapticsEnabled: true,
       currentPlayingLevelId: 1,
       boostersCount: {
-        hammer: 15,
-        shuffle: 15,
-        rainbow: 15,
-        hint: 15,
-        undo: 15,
+        hammer: 3,
+        shuffle: 3,
+        rainbow: 3,
+        hint: 3,
+        undo: 3,
       },
+      missions: DEFAULT_MISSIONS,
+      dailyLoginDay: 1,
+      lastDailyLoginDate: null,
       achievements: [
         { id: 'first_match', title: 'First Match', description: 'Make your first crystal match!', isUnlocked: false, icon: '✨', rewardType: 'coins', rewardValue: 100 },
         { id: 'first_win', title: 'First Victory', description: 'Successfully clear your first puzzle stage!', isUnlocked: false, icon: '🏆', rewardType: 'diamonds', rewardValue: 10 },
@@ -311,9 +447,9 @@ export default function App() {
             setGameState((prev) => ({
               ...prev,
               name: playerName,
-              coins: 0,
-              diamonds: 0,
-              gemsCount: 0,
+              coins: 500,
+              diamonds: 20,
+              gemsCount: 20,
               score: 0,
               level: 1,
               xp: 0,
@@ -346,6 +482,42 @@ export default function App() {
         triggerHaptic={triggerHapticFeedback}
       />
 
+      {/* Booster Shop Modal */}
+      <BoosterShopModal
+        isOpen={isShopOpen}
+        onClose={() => setIsShopOpen(false)}
+        playerCoins={gameState.coins}
+        playerDiamonds={gameState.diamonds}
+        onBuyItem={handleBuyBoosterItem}
+        triggerHaptic={triggerHapticFeedback}
+      />
+
+      {/* 7-Day Login Modal */}
+      <DailyLoginModal
+        isOpen={isDailyLoginOpen}
+        onClose={() => setIsDailyLoginOpen(false)}
+        gameState={gameState}
+        onClaimDay={handleClaimDailyLogin}
+        triggerHaptic={triggerHapticFeedback}
+      />
+
+      {/* Missions / Bounties Modal */}
+      <MissionsModal
+        isOpen={isMissionsOpen}
+        onClose={() => setIsMissionsOpen(false)}
+        gameState={gameState}
+        onClaimMission={handleClaimMission}
+        triggerHaptic={triggerHapticFeedback}
+      />
+
+      {/* Rewarded Ad Modal */}
+      <RewardedAdModal
+        isOpen={isRewardedAdOpen}
+        onClose={() => setIsRewardedAdOpen(false)}
+        onRewardGranted={handleRewardedAdGrant}
+        triggerHaptic={triggerHapticFeedback}
+      />
+
       {/* Push Notification slide down */}
       <AnimatePresence>
         {activeNotification && (
@@ -359,7 +531,7 @@ export default function App() {
 
       {/* Primary Mobile-first Responsive Container */}
       <div className="w-full max-w-md mx-auto h-[100dvh] md:h-[94vh] md:max-h-[890px] bg-gradient-to-b from-[#111c47] via-[#131f4e] to-[#0e163b] border-x md:border-2 border-indigo-500/50 relative flex flex-col overflow-hidden select-none shadow-[0_0_50px_rgba(59,130,246,0.3)] md:rounded-3xl">
-        {/* Responsive Header (Natural flex child, centered and contained) */}
+        {/* Responsive Header */}
         <header className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
           <div className="h-14 sm:h-16 px-2.5 sm:px-4 flex items-center justify-between gap-1">
             <div
@@ -376,11 +548,17 @@ export default function App() {
 
             {/* Top stats badges & Profile button */}
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              {/* Coins Counter */}
-              <div className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-amber-400/50 font-headline font-black text-[10px] sm:text-xs text-amber-300 shadow-sm">
+              {/* Coins Counter (Clickable to open Shop) */}
+              <button
+                type="button"
+                onClick={() => { triggerHapticFeedback('click'); setIsShopOpen(true); }}
+                className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-amber-400/50 font-headline font-black text-[10px] sm:text-xs text-amber-300 shadow-sm hover:border-amber-300 cursor-pointer"
+                title="Open Booster Emporium"
+              >
                 <span>🪙</span>
                 <span>{gameState.coins.toLocaleString()}</span>
-              </div>
+                <span className="text-[9px] text-amber-400 font-bold ml-0.5">+</span>
+              </button>
 
               {/* Diamonds Counter */}
               <div className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-cyan-400/50 font-headline font-black text-[10px] sm:text-xs text-cyan-300 shadow-sm">
@@ -390,6 +568,7 @@ export default function App() {
 
               {/* Profile Button */}
               <button
+                type="button"
                 onClick={() => handleNavigation('profile')}
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white border border-cyan-300 flex items-center justify-center font-headline font-bold text-xs shadow-[0_0_12px_rgba(34,211,238,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
                 title="Player Profile"
@@ -428,22 +607,10 @@ export default function App() {
                   triggerHaptic={triggerHapticFeedback}
                   triggerPushNotification={triggerPushNotification}
                   onOpenProfile={() => setIsProfileOpen(true)}
-                  onClaimDailyReward={() => {
-                    const today = new Date().toISOString().split('T')[0];
-                    if (gameState.lastClaimedDaily === today) {
-                      triggerPushNotification('Already Claimed', 'You have already claimed today\'s Mystic Treasure chest!');
-                      return;
-                    }
-                    triggerHapticFeedback();
-                    setGameState((prev) => ({
-                      ...prev,
-                      coins: prev.coins + 500,
-                      diamonds: prev.diamonds + 10,
-                      gemsCount: prev.gemsCount + 10,
-                      lastClaimedDaily: today,
-                    }));
-                    triggerPushNotification('Treasure Claimed!', '🪙 +500 Coins and 💎 +10 Diamonds added to your magical stash.');
-                  }}
+                  onOpenShop={() => setIsShopOpen(true)}
+                  onOpenDailyLogin={() => setIsDailyLoginOpen(true)}
+                  onOpenMissions={() => setIsMissionsOpen(true)}
+                  onOpenRewardedAd={() => setIsRewardedAdOpen(true)}
                 />
               )}
               {gameState.activeTab === 'map' && (
@@ -463,20 +630,25 @@ export default function App() {
                   triggerHaptic={triggerHapticFeedback}
                   triggerPushNotification={triggerPushNotification}
                   onSetLevelInProgress={setIsLevelInProgress}
+                  onOpenShop={() => setIsShopOpen(true)}
+                  onMatchMade={handleMatchMade}
                   onUpdateBoosters={(newBoosters) => {
                     setGameState((prev) => ({
                       ...prev,
                       boostersCount: newBoosters,
                     }));
                   }}
-                  onGameEnd={(won, matchScore) => {
+                  onGameEnd={(won, matchScore, perfectRun) => {
                     setGameState((prev) => {
                       const newGamesPlayed = prev.gamesPlayed + 1;
                       const newWins = won ? prev.wins + 1 : prev.wins;
                       const newLosses = won ? prev.losses : prev.losses + 1;
+                      const newWinStreak = won ? (prev.winStreak || 0) + 1 : 0;
 
-                      const addedCoins = won ? 250 : 0;
-                      const addedDiamonds = won ? 15 : 0;
+                      const baseCoins = won ? 250 : 0;
+                      const baseDiamonds = won ? 15 : 0;
+                      const streakCoins = won && newWinStreak >= 3 ? 100 : 0;
+                      const perfectCoins = won && perfectRun ? 150 : 0;
 
                       let newXp = prev.xp + (won ? 150 : 30);
                       let newLevel = prev.level;
@@ -500,6 +672,23 @@ export default function App() {
                           return lvl;
                         });
                       }
+
+                      // Update missions: clear_levels, perfect_level, reach_score
+                      const updatedMissions = (prev.missions || []).map((m) => {
+                        if (won && m.type === 'clear_levels') {
+                          const p = Math.min(m.target, m.current + 1);
+                          return { ...m, current: p, completed: p >= m.target };
+                        }
+                        if (won && perfectRun && m.type === 'perfect_level') {
+                          const p = Math.min(m.target, m.current + 1);
+                          return { ...m, current: p, completed: p >= m.target };
+                        }
+                        if (matchScore >= 5000 && m.type === 'reach_score') {
+                          const p = Math.min(m.target, m.current + 1);
+                          return { ...m, current: p, completed: p >= m.target };
+                        }
+                        return m;
+                      });
 
                       // Dynamic achievements checking and rewards unlocking
                       let currentAchievements = [...prev.achievements];
@@ -533,19 +722,24 @@ export default function App() {
                         }
                       }
 
+                      const totalCoinsAdded = baseCoins + streakCoins + perfectCoins + bonusCoins;
+                      const totalDiamondsAdded = baseDiamonds + bonusDiamonds;
+
                       return {
                         ...prev,
-                        coins: prev.coins + addedCoins + bonusCoins,
-                        diamonds: prev.diamonds + addedDiamonds + bonusDiamonds,
-                        gemsCount: prev.gemsCount + addedDiamonds + bonusDiamonds,
+                        coins: prev.coins + totalCoinsAdded,
+                        diamonds: prev.diamonds + totalDiamondsAdded,
+                        gemsCount: prev.gemsCount + totalDiamondsAdded,
                         score: prev.score + matchScore,
                         wins: newWins,
                         losses: newLosses,
                         gamesPlayed: newGamesPlayed,
+                        winStreak: newWinStreak,
                         xp: newXp,
                         xpMax: newXpMax,
                         level: newLevel,
                         levels: updatedLevels,
+                        missions: updatedMissions,
                         achievements: currentAchievements,
                       };
                     });
@@ -558,7 +752,10 @@ export default function App() {
                   setGameState={setGameState}
                   triggerHaptic={triggerHapticFeedback}
                   triggerPushNotification={triggerPushNotification}
-                  triggerSync={triggerAutomaticSync}
+                  triggerSync={() => {
+                    triggerHapticFeedback();
+                    triggerPushNotification('Data Synced', 'All player data successfully synchronized.');
+                  }}
                   resetGameProgress={resetGameProgress}
                 />
               )}
@@ -566,7 +763,7 @@ export default function App() {
           </AnimatePresence>
         </main>
 
-        {/* Universal Sticky Bottom Navigation Bar (4-slot Grid: HOME, MAP, PLAY, CONFIG) */}
+        {/* Universal Sticky Bottom Navigation Bar */}
         <nav className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-t-2 border-indigo-500/40 pb-safe">
           <div className="grid grid-cols-4 items-center h-14 sm:h-16 px-1.5 sm:px-2">
             {/* Tab: Home */}

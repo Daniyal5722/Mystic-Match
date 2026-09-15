@@ -29,6 +29,42 @@ export interface Achievement {
   rewardValue: number;
 }
 
+export type BoosterType = 'hint' | 'shuffle' | 'undo' | 'hammer' | 'rainbow';
+
+export interface BoosterShopItem {
+  id: string;
+  name: string;
+  type: BoosterType | 'mega_bundle';
+  description: string;
+  quantity: number;
+  coinCost?: number;
+  diamondCost?: number;
+  icon: string;
+  isPopular?: boolean;
+}
+
+export interface Mission {
+  id: string;
+  title: string;
+  description: string;
+  target: number;
+  current: number;
+  completed: boolean;
+  claimed: boolean;
+  rewardCoins: number;
+  rewardDiamonds?: number;
+  rewardBooster?: { type: BoosterType; count: number };
+  type?: 'match_gems' | 'clear_levels' | 'use_booster' | 'daily_login' | 'reach_score' | 'perfect_level';
+}
+
+export interface DailyLoginReward {
+  day: number;
+  rewardDescription: string;
+  coins: number;
+  diamonds?: number;
+  boosters?: Partial<{ hammer: number; shuffle: number; rainbow: number; hint: number; undo: number }>;
+}
+
 export type DifficultyMode = 'easy' | 'medium' | 'hard' | 'extreme';
 
 export interface GameState {
@@ -43,6 +79,9 @@ export interface GameState {
   wins: number;
   losses: number;
   gamesPlayed: number;
+  winStreak: number;
+  totalMatchesMade: number;
+  levelsWithoutBoosters: number;
   activeTab: 'home' | 'map' | 'game' | 'settings';
   levels: Level[];
   notifications: GameNotification[];
@@ -66,7 +105,10 @@ export interface GameState {
     undo: number;
   };
   achievements: Achievement[];
+  missions: Mission[];
   lastClaimedDaily: string | null; // Date format: YYYY-MM-DD
+  dailyLoginDay: number; // 1 to 7 cycle
+  lastDailyLoginDate?: string | null;
   activeLevelSession?: ActiveLevelSession | null;
 }
 
