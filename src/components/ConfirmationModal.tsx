@@ -68,7 +68,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 15 }}
             transition={{ type: 'spring', damping: 24, stiffness: 260 }}
-            className="w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/80 p-5 sm:p-6 rounded-2xl shadow-[0_12px_45px_rgba(30,58,138,0.5)] text-center text-white relative max-h-[90dvh] overflow-y-auto"
+            className="w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/80 p-5 sm:p-6 rounded-2xl shadow-[0_12px_45px_rgba(30,58,138,0.5)] text-center text-white relative max-h-[90dvh] overflow-y-auto allow-scroll"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Icon */}

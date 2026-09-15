@@ -76,7 +76,7 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
           </div>
 
           {/* 7 Days Grid */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 my-3 overflow-y-auto pr-0.5">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 my-3 overflow-y-auto allow-scroll pr-0.5">
             {DAILY_LOGIN_REWARDS.map((reward) => {
               const isPast = reward.day < currentDayCycle || (reward.day === currentDayCycle && isClaimedToday);
               const isToday = reward.day === currentDayCycle && !isClaimedToday;

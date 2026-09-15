@@ -65,7 +65,7 @@ export const MissionsModal: React.FC<MissionsModalProps> = ({
           </div>
 
           {/* Mission Cards */}
-          <div className="flex-1 overflow-y-auto py-3 space-y-2.5 pr-0.5">
+          <div className="flex-1 overflow-y-auto allow-scroll py-3 space-y-2.5 pr-0.5">
             {missions.map((mission) => {
               const progressPct = Math.min(100, Math.round((mission.current / mission.target) * 100));
               const canClaim = mission.completed && !mission.claimed;

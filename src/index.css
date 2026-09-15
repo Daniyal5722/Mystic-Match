@@ -106,6 +106,25 @@ html, body, #root {
   box-sizing: border-box;
 }
 
+/* Ensure 100dvh / 100svh support for modern mobile browsers */
+.h-screen-dynamic {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Prevent unwanted pull-to-refresh or page elastic scrolling */
+.overscroll-none {
+  overscroll-behavior: none;
+}
+
+.touch-none {
+  touch-action: none;
+}
+
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

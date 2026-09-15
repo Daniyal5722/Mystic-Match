@@ -104,7 +104,7 @@ export const BoosterShopModal: React.FC<BoosterShopModalProps> = ({
           </div>
 
           {/* Shop Items List */}
-          <div className="flex-1 overflow-y-auto py-3 space-y-2.5 pr-0.5">
+          <div className="flex-1 overflow-y-auto allow-scroll py-3 space-y-2.5 pr-0.5">
             {BOOSTER_SHOP_ITEMS.map((item) => {
               const canAfford = gameState.coins >= item.costCoins;
               const isBundle = item.type === 'bundle';

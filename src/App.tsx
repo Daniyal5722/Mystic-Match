@@ -236,6 +236,36 @@ export default function App() {
     }
   }, [gameState.activeTab, isLevelInProgress]);
 
+  // Strictly prevent any vertical/horizontal webpage scrolling or bounce during active gameplay
+  useEffect(() => {
+    if (gameState.activeTab === 'game') {
+      const handleTouchMove = (e: TouchEvent) => {
+        const target = e.target as HTMLElement | null;
+        // Allow scrolling inside explicit scrollable dialogs/modals
+        if (target && target.closest('.allow-scroll')) {
+          return;
+        }
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      };
+
+      const originalOverflow = document.body.style.overflow;
+      const originalOverscroll = document.body.style.overscrollBehavior;
+
+      document.body.style.overflow = 'hidden';
+      document.body.style.overscrollBehavior = 'none';
+
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.overscrollBehavior = originalOverscroll;
+        window.removeEventListener('touchmove', handleTouchMove);
+      };
+    }
+  }, [gameState.activeTab]);
+
   // Economy: Booster Shop Purchase Handler
   const handleBuyBoosterItem = (item: BoosterShopItem) => {
     setGameState((prev) => {
@@ -531,56 +561,58 @@ export default function App() {
 
       {/* Primary Mobile-first Responsive Container */}
       <div className="w-full max-w-md mx-auto h-[100dvh] md:h-[94vh] md:max-h-[890px] bg-gradient-to-b from-[#111c47] via-[#131f4e] to-[#0e163b] border-x md:border-2 border-indigo-500/50 relative flex flex-col overflow-hidden select-none shadow-[0_0_50px_rgba(59,130,246,0.3)] md:rounded-3xl">
-        {/* Responsive Header */}
-        <header className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
-          <div className="h-14 sm:h-16 px-2.5 sm:px-4 flex items-center justify-between gap-1">
-            <div
-              onClick={() => handleNavigation('home')}
-              className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group min-w-0"
-            >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm sm:text-lg shadow-[0_0_12px_rgba(34,211,238,0.5)] border border-cyan-300 shrink-0">
-                🔮
-              </div>
-              <span className="font-headline font-black uppercase tracking-wider text-xs sm:text-sm text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-cyan-300 group-hover:brightness-110 transition-all truncate">
-                Mystic Match
-              </span>
-            </div>
-
-            {/* Top stats badges & Profile button */}
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              {/* Coins Counter (Clickable to open Shop) */}
-              <button
-                type="button"
-                onClick={() => { triggerHapticFeedback('click'); setIsShopOpen(true); }}
-                className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-amber-400/50 font-headline font-black text-[10px] sm:text-xs text-amber-300 shadow-sm hover:border-amber-300 cursor-pointer"
-                title="Open Booster Emporium"
+        {/* Responsive Header (Hidden during active gameplay to maximize board canvas and avoid duplicate headers) */}
+        {gameState.activeTab !== 'game' && (
+          <header className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
+            <div className="h-14 sm:h-16 px-2.5 sm:px-4 flex items-center justify-between gap-1">
+              <div
+                onClick={() => handleNavigation('home')}
+                className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group min-w-0"
               >
-                <span>🪙</span>
-                <span>{gameState.coins.toLocaleString()}</span>
-                <span className="text-[9px] text-amber-400 font-bold ml-0.5">+</span>
-              </button>
-
-              {/* Diamonds Counter */}
-              <div className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-cyan-400/50 font-headline font-black text-[10px] sm:text-xs text-cyan-300 shadow-sm">
-                <span>💎</span>
-                <span>{gameState.diamonds.toLocaleString()}</span>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm sm:text-lg shadow-[0_0_12px_rgba(34,211,238,0.5)] border border-cyan-300 shrink-0">
+                  🔮
+                </div>
+                <span className="font-headline font-black uppercase tracking-wider text-xs sm:text-sm text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-cyan-300 group-hover:brightness-110 transition-all truncate">
+                  Mystic Match
+                </span>
               </div>
 
-              {/* Profile Button */}
-              <button
-                type="button"
-                onClick={() => handleNavigation('profile')}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white border border-cyan-300 flex items-center justify-center font-headline font-bold text-xs shadow-[0_0_12px_rgba(34,211,238,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
-                title="Player Profile"
-              >
-                <User size={14} />
-              </button>
+              {/* Top stats badges & Profile button */}
+              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                {/* Coins Counter (Clickable to open Shop) */}
+                <button
+                  type="button"
+                  onClick={() => { triggerHapticFeedback('click'); setIsShopOpen(true); }}
+                  className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-amber-400/50 font-headline font-black text-[10px] sm:text-xs text-amber-300 shadow-sm hover:border-amber-300 cursor-pointer"
+                  title="Open Booster Emporium"
+                >
+                  <span>🪙</span>
+                  <span>{gameState.coins.toLocaleString()}</span>
+                  <span className="text-[9px] text-amber-400 font-bold ml-0.5">+</span>
+                </button>
+
+                {/* Diamonds Counter */}
+                <div className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-cyan-400/50 font-headline font-black text-[10px] sm:text-xs text-cyan-300 shadow-sm">
+                  <span>💎</span>
+                  <span>{gameState.diamonds.toLocaleString()}</span>
+                </div>
+
+                {/* Profile Button */}
+                <button
+                  type="button"
+                  onClick={() => handleNavigation('profile')}
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white border border-cyan-300 flex items-center justify-center font-headline font-bold text-xs shadow-[0_0_12px_rgba(34,211,238,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
+                  title="Player Profile"
+                >
+                  <User size={14} />
+                </button>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* Floating Offline connection state indicator */}
-        {gameState.offline && (
+        {gameState.offline && gameState.activeTab !== 'game' && (
           <div className="mx-3 sm:mx-4 mt-2 bg-amber-950/70 border border-amber-400/50 rounded-xl p-2 flex items-center justify-between gap-2 shadow-md shrink-0">
             <span className="text-[10px] font-headline font-black text-amber-300 uppercase flex items-center gap-1 truncate">
               <WifiOff size={12} className="shrink-0" /> Offline Mode Active
@@ -589,8 +621,14 @@ export default function App() {
           </div>
         )}
 
-        {/* Interactive Scrollable Active Tab Viewport */}
-        <main className="flex-1 min-h-0 w-full p-2.5 sm:p-4 overflow-y-auto overflow-x-hidden relative flex flex-col justify-start">
+        {/* Interactive Viewport (Strictly locked & fixed during gameplay, scrollable on Map/Home) */}
+        <main
+          className={`flex-1 min-h-0 w-full relative flex flex-col select-none ${
+            gameState.activeTab === 'game'
+              ? 'p-2 sm:p-2.5 overflow-hidden overscroll-none touch-none h-full justify-between'
+              : 'p-2.5 sm:p-4 overflow-y-auto overflow-x-hidden justify-start'
+          }`}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={gameState.activeTab}
@@ -763,74 +801,57 @@ export default function App() {
           </AnimatePresence>
         </main>
 
-        {/* Universal Sticky Bottom Navigation Bar */}
-        <nav className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-t-2 border-indigo-500/40 pb-safe">
-          <div className="grid grid-cols-4 items-center h-14 sm:h-16 px-1.5 sm:px-2">
-            {/* Tab: Home */}
-            <button
-              id="home-tab"
-              type="button"
-              onClick={() => handleNavigation('home')}
-              className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
-                gameState.activeTab === 'home'
-                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
-                  : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
-              }`}
-            >
-              <Home size={17} />
-              <span className="text-[8px] sm:text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Home</span>
-            </button>
+        {/* Universal Sticky Bottom Navigation Bar (Hidden during active gameplay to maximize puzzle canvas and eliminate overlaps) */}
+        {gameState.activeTab !== 'game' && (
+          <nav className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-t-2 border-indigo-500/40 pb-safe">
+            <div className="grid grid-cols-3 items-center h-14 sm:h-16 px-2 sm:px-4">
+              {/* Tab: Home */}
+              <button
+                id="home-tab"
+                type="button"
+                onClick={() => handleNavigation('home')}
+                className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                  gameState.activeTab === 'home'
+                    ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
+                    : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
+                }`}
+              >
+                <Home size={18} />
+                <span className="text-[8.5px] sm:text-[9.5px] uppercase font-headline font-bold tracking-wider leading-none">Home</span>
+              </button>
 
-            {/* Tab: Map */}
-            <button
-              id="map-tab"
-              type="button"
-              onClick={() => handleNavigation('map')}
-              className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
-                gameState.activeTab === 'map'
-                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
-                  : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
-              }`}
-            >
-              <MapIcon size={17} />
-              <span className="text-[8px] sm:text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Map</span>
-            </button>
+              {/* Tab: Map (Primary Gateway to all levels) */}
+              <button
+                id="map-tab"
+                type="button"
+                onClick={() => handleNavigation('map')}
+                className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                  gameState.activeTab === 'map'
+                    ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
+                    : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
+                }`}
+              >
+                <MapIcon size={18} />
+                <span className="text-[8.5px] sm:text-[9.5px] uppercase font-headline font-bold tracking-wider leading-none">Stages</span>
+              </button>
 
-            {/* Tab: Puzzle Grid (Play) */}
-            <button
-              id="game-board"
-              type="button"
-              onClick={() => {
-                if (gameState.activeTab !== 'game') {
-                  setTab('game');
-                }
-              }}
-              className={`flex flex-col p-1.5 min-w-[56px] items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
-                gameState.activeTab === 'game'
-                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
-                  : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50 hover:scale-105 active:scale-95 animate-glow-pulse'
-              }`}
-            >
-              <Play size={17} className="fill-current" />
-              <span className="text-[8px] sm:text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Play</span>
-            </button>
-
-            {/* Tab: Settings (Config) */}
-            <button
-              id="settings-tab"
-              type="button"
-              onClick={() => handleNavigation('settings')}
-              className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
-                gameState.activeTab === 'settings'
-                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
-                  : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
-              }`}
-            >
-              <SettingsIcon size={17} />
-              <span className="text-[8px] sm:text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Config</span>
-            </button>
-          </div>
-        </nav>
+              {/* Tab: Settings (Config) */}
+              <button
+                id="settings-tab"
+                type="button"
+                onClick={() => handleNavigation('settings')}
+                className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                  gameState.activeTab === 'settings'
+                    ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
+                    : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
+                }`}
+              >
+                <SettingsIcon size={18} />
+                <span className="text-[8.5px] sm:text-[9.5px] uppercase font-headline font-bold tracking-wider leading-none">Config</span>
+              </button>
+            </div>
+          </nav>
+        )}
 
         {/* Global Navigation Guard Confirmation Modal */}
         <ConfirmationModal

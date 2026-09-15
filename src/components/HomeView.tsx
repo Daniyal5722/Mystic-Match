@@ -40,18 +40,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenMissions,
   onOpenRewardedAd,
 }) => {
-  const [matchingStatus, setMatchingStatus] = useState<'idle' | 'searching' | 'found'>('idle');
-
-  const startQuickMatch = () => {
+  const goToMap = () => {
     triggerHaptic('click');
-    setMatchingStatus('searching');
-    setTimeout(() => {
-      setMatchingStatus('found');
-      setTimeout(() => {
-        setMatchingStatus('idle');
-        setTab('game');
-      }, 500);
-    }, 900);
+    setTab('map');
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -300,28 +291,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </p>
 
         <button
-          onClick={startQuickMatch}
-          disabled={matchingStatus !== 'idle'}
-          className="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 py-2.5 px-4 rounded-xl font-headline font-black text-sm uppercase tracking-wider shadow-[0_4px_20px_rgba(251,191,36,0.35)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-80"
+          onClick={goToMap}
+          className="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 py-2.5 px-4 rounded-xl font-headline font-black text-sm uppercase tracking-wider shadow-[0_4px_20px_rgba(251,191,36,0.35)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          {matchingStatus === 'idle' && (
-            <>
-              <Play size={15} className="fill-current" />
-              PLAY NOW
-            </>
-          )}
-          {matchingStatus === 'searching' && (
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              Entering Arena...
-            </span>
-          )}
-          {matchingStatus === 'found' && (
-            <span className="flex items-center gap-2">
-              <Zap size={15} className="animate-bounce" />
-              Arena Ready!
-            </span>
-          )}
+          <Map size={16} className="text-slate-950" />
+          EXPLORE REALM MAP
         </button>
       </motion.div>
 

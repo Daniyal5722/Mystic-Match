@@ -548,6 +548,70 @@ export const GameView: React.FC<GameViewProps> = ({
     return () => clearInterval(intervalId);
   }, [isPaused, gameResult, isLeaveConfirmOpen, isRestartConfirmOpen]);
 
+  // Touch Swipe Gesture State (Supports natural swipe gestures in all 4 directions without page scroll)
+  const touchStartRef = useRef<{ x: number; y: number; gem: BoardGem } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent, gem: BoardGem) => {
+    if (isProcessing || gameResult || isPaused || isLeaveConfirmOpen || isRestartConfirmOpen) return;
+    if (e.touches.length > 0) {
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        gem,
+      };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Strictly prevent the webpage from scrolling or moving during game board gestures
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+    if (!touchStartRef.current || isProcessing || gameResult || isPaused || isLeaveConfirmOpen || isRestartConfirmOpen) {
+      return;
+    }
+
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+    const distance = Math.hypot(deltaX, deltaY);
+
+    // Swipe distance threshold (22px) for snappy, responsive mobile gem swapping
+    if (distance >= 22) {
+      const originGem = touchStartRef.current.gem;
+      touchStartRef.current = null; // consume gesture so it only fires once
+
+      if (boosterActive === 'hammer') {
+        triggerHammerSmash(originGem);
+        return;
+      }
+
+      let targetRow = originGem.row;
+      let targetCol = originGem.col;
+
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        targetCol += deltaX > 0 ? 1 : -1;
+      } else {
+        targetRow += deltaY > 0 ? 1 : -1;
+      }
+
+      if (targetRow >= 0 && targetRow < BOARD_SIZE && targetCol >= 0 && targetCol < BOARD_SIZE) {
+        const targetGem = board[targetRow]?.[targetCol];
+        if (targetGem) {
+          if (hintPair) setHintPair(null);
+          setSelectedGem(null);
+          swapGems(originGem, targetGem);
+        }
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartRef.current = null;
+  };
+
   const handleGemClick = (gem: BoardGem) => {
     if (isProcessing || gameResult || isPaused || isLeaveConfirmOpen || isRestartConfirmOpen) return;
 
@@ -944,24 +1008,24 @@ export const GameView: React.FC<GameViewProps> = ({
   const objectiveStyle = GEM_STYLES[objectiveType];
 
   return (
-    <div className="flex flex-col w-full h-full justify-between select-none relative z-10 text-white max-w-full min-w-0">
-      {/* Header with Navigation and Stage Title */}
-      <div className="flex items-center justify-between mb-1.5 sm:mb-2 shrink-0">
+    <div className="flex flex-col w-full h-full justify-between select-none relative z-10 text-white max-w-full min-w-0 overscroll-none touch-none">
+      {/* Unified In-Game Header: Back to Map, Stage Title, Currency, and Pause */}
+      <div className="flex items-center justify-between mb-1 sm:mb-1.5 shrink-0 gap-1">
         <button
           type="button"
           onClick={() => handleRequestLeave('map')}
-          className="flex items-center gap-1 font-headline font-bold text-[11px] sm:text-xs uppercase text-cyan-300 hover:text-white transition-colors cursor-pointer bg-[#121d4a] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-indigo-400/40 shadow-[0_2px_10px_rgba(34,211,238,0.2)] min-h-[36px]"
+          className="flex items-center gap-1 font-headline font-bold text-[11px] sm:text-xs uppercase text-cyan-300 hover:text-white transition-colors cursor-pointer bg-[#121d4a] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-indigo-400/40 shadow-[0_2px_10px_rgba(34,211,238,0.2)] min-h-[36px] shrink-0"
           title="Return to Realm Map"
         >
           <ArrowLeft size={14} /> Map
         </button>
 
-        <div className="flex items-center gap-1.5 min-w-0 px-1">
+        <div className="flex items-center gap-1 min-w-0 px-1 truncate">
           <h2 className="font-headline font-black text-xs sm:text-sm uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-white to-cyan-300 shadow-sm truncate">
             Stage {currentLevelId}: {levelData?.name || 'Arena'}
           </h2>
           {currentDifficulty !== 'medium' && (
-            <span className={`px-1.5 py-0.5 rounded text-[8px] font-headline font-black uppercase tracking-wider border shrink-0 ${
+            <span className={`px-1 py-0.2 rounded text-[7.5px] font-headline font-black uppercase tracking-wider border shrink-0 ${
               currentDifficulty === 'easy' ? 'text-emerald-300 border-emerald-400/50 bg-emerald-950/50' :
               currentDifficulty === 'hard' ? 'text-amber-300 border-amber-400/50 bg-amber-950/50' :
               'text-rose-300 border-rose-400/50 bg-rose-950/50'
@@ -971,76 +1035,75 @@ export const GameView: React.FC<GameViewProps> = ({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => { triggerHaptic('click'); setIsPaused(true); }}
-          className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 border border-cyan-300 flex items-center justify-center text-white cursor-pointer shadow-[0_2px_10px_rgba(34,211,238,0.3)] hover:scale-105 active:scale-95 transition-all shrink-0 min-h-[32px] min-w-[32px]"
-          title="Pause Game"
-          aria-label="Pause Game"
-        >
-          <Pause size={13} className="fill-current" />
-        </button>
-      </div>
-
-      {/* Top Objective Card */}
-      <div className="flex flex-col gap-1 sm:gap-1.5 mb-1.5 shrink-0">
-        <div className={`card-glowing-${objectiveType === 'ruby' ? 'rose' : 'cyan'} bg-gradient-to-r from-[#121c47] to-[#101b44] p-1.5 sm:p-2 rounded-xl flex items-center justify-between border-2 border-indigo-400/50 shadow-[0_4px_15px_rgba(0,0,0,0.3)]`}>
-          <div className="flex items-center gap-2 min-w-0">
-            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-headline font-black text-base sm:text-lg border ${objectiveStyle.border} bg-gradient-to-b ${objectiveStyle.bg} shadow-md shrink-0`}>
-              {objectiveStyle.icon}
-            </div>
-            <div className="min-w-0">
-              <p className="text-[7px] sm:text-[8px] font-headline uppercase tracking-wider text-indigo-300 leading-none mb-0.5 truncate">
-                Mission Objective
-              </p>
-              <p className="text-xs sm:text-sm font-headline font-black text-white leading-none truncate">
-                Collect {objectiveTarget} {objectiveType}s
-              </p>
-            </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="hidden xs:flex items-center gap-1 bg-[#121d4a] px-2 py-1 rounded-lg border border-amber-400/40 text-amber-300 font-headline font-black text-[10px]">
+            <span>🪙</span>
+            <span>{gameState.coins.toLocaleString()}</span>
           </div>
-          <div className="bg-[#0b1b3b] text-white px-2.5 py-1 rounded-lg font-headline font-black text-xs sm:text-sm border border-indigo-400/60 shadow-inner shrink-0">
-            <span className="text-cyan-300">{gemsCollected}</span><span className="text-indigo-400/60">/{objectiveTarget}</span>
-          </div>
-        </div>
-
-        {/* 3-Column Stats Grid: Score, Moves, Time */}
-        <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
-          {/* Score Stat */}
-          <div className="bg-gradient-to-b from-[#2a1e0b] to-[#1a1306] p-1.5 border-2 border-amber-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(251,191,36,0.15)] min-w-0">
-            <div className="min-w-0">
-              <p className="text-[7px] sm:text-[8px] font-headline uppercase tracking-wider text-amber-300/80 leading-none">Score</p>
-              <h3 className="text-xs sm:text-sm font-headline font-black text-amber-300 leading-none mt-0.5 truncate">{score.toLocaleString()}</h3>
-            </div>
-            <Trophy size={13} className="text-amber-400 shrink-0 ml-1 hidden xs:block" />
-          </div>
-
-          {/* Moves Stat */}
-          <div className="bg-gradient-to-b from-[#0c244c] to-[#081733] p-1.5 border-2 border-cyan-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(34,211,238,0.15)] min-w-0">
-            <div className="min-w-0">
-              <p className="text-[7px] sm:text-[8px] font-headline uppercase tracking-wider text-cyan-300/80 leading-none">Moves</p>
-              <h3 className={`text-xs sm:text-sm font-headline font-black leading-none mt-0.5 truncate ${movesLeft <= 5 ? 'text-rose-400 animate-pulse' : 'text-cyan-300'}`}>
-                {movesLeft}
-              </h3>
-            </div>
-            <Zap size={13} className="text-cyan-400 shrink-0 ml-1 hidden xs:block" />
-          </div>
-
-          {/* Time Stat */}
-          <div className="bg-gradient-to-b from-[#211145] to-[#130b2c] p-1.5 border-2 border-purple-400/60 rounded-xl flex items-center justify-between shadow-[0_2px_10px_rgba(168,85,247,0.15)] min-w-0">
-            <div className="min-w-0">
-              <p className="text-[7px] sm:text-[8px] font-headline uppercase tracking-wider text-purple-300/80 leading-none">Time</p>
-              <h3 className="text-xs sm:text-sm font-headline font-black text-purple-300 leading-none mt-0.5 truncate font-mono">
-                {formatTime(elapsedSeconds)}
-              </h3>
-            </div>
-            <Clock size={13} className="text-purple-400 shrink-0 ml-1 hidden xs:block" />
-          </div>
+          <button
+            type="button"
+            onClick={() => { triggerHaptic('click'); setIsPaused(true); }}
+            className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 border border-cyan-300 flex items-center justify-center text-white cursor-pointer shadow-[0_2px_10px_rgba(34,211,238,0.3)] hover:scale-105 active:scale-95 transition-all shrink-0 min-h-[32px] min-w-[32px]"
+            title="Pause Game"
+            aria-label="Pause Game"
+          >
+            <Pause size={13} className="fill-current" />
+          </button>
         </div>
       </div>
 
-      {/* Main 8x8 Board (Responsive: scaled to fit mobile viewports cleanly) */}
-      <div className="relative w-full max-w-[min(100%,min(45vh,350px))] aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden shrink-0 touch-manipulation">
-        <div id="game-board-grid" className="grid grid-cols-8 grid-rows-8 w-full h-full gap-0.5 sm:gap-1 touch-none">
+      {/* High-Efficiency Unified In-Game HUD: Target Objective + Moves Left + Score + Time */}
+      <div className="grid grid-cols-4 gap-1 sm:gap-1.5 mb-1 shrink-0">
+        {/* 1. Target Objective */}
+        <div className={`p-1 sm:p-1.5 rounded-xl flex items-center gap-1 sm:gap-1.5 border ${objectiveType === 'ruby' ? 'border-rose-400/60 bg-rose-950/30' : 'border-cyan-400/60 bg-cyan-950/30'} min-w-0 shadow-sm`}>
+          <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md flex items-center justify-center text-xs border ${objectiveStyle.border} bg-gradient-to-b ${objectiveStyle.bg} shrink-0`}>
+            {objectiveStyle.icon}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[6.5px] uppercase font-headline font-bold text-indigo-300 leading-none truncate">Target</p>
+            <p className="text-[11px] sm:text-xs font-headline font-black text-white leading-none mt-0.5 truncate">
+              <span className="text-cyan-300">{gemsCollected}</span><span className="text-indigo-400/60">/{objectiveTarget}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* 2. Moves Left */}
+        <div className="bg-gradient-to-b from-[#0c244c] to-[#081733] p-1 sm:p-1.5 border border-cyan-400/60 rounded-xl flex flex-col justify-center min-w-0 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-[6.5px] uppercase font-headline font-bold text-cyan-300/80 leading-none">Moves</p>
+            <Zap size={9} className="text-cyan-400 shrink-0" />
+          </div>
+          <h3 className={`text-xs sm:text-sm font-headline font-black leading-none mt-0.5 truncate ${movesLeft <= 5 ? 'text-rose-400 animate-pulse' : 'text-cyan-300'}`}>
+            {movesLeft}
+          </h3>
+        </div>
+
+        {/* 3. Score */}
+        <div className="bg-gradient-to-b from-[#2a1e0b] to-[#1a1306] p-1 sm:p-1.5 border border-amber-400/60 rounded-xl flex flex-col justify-center min-w-0 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-[6.5px] uppercase font-headline font-bold text-amber-300/80 leading-none">Score</p>
+            <Trophy size={9} className="text-amber-400 shrink-0" />
+          </div>
+          <h3 className="text-xs sm:text-sm font-headline font-black text-amber-300 leading-none mt-0.5 truncate">
+            {score.toLocaleString()}
+          </h3>
+        </div>
+
+        {/* 4. Time */}
+        <div className="bg-gradient-to-b from-[#211145] to-[#130b2c] p-1 sm:p-1.5 border border-purple-400/60 rounded-xl flex flex-col justify-center min-w-0 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-[6.5px] uppercase font-headline font-bold text-purple-300/80 leading-none">Time</p>
+            <Clock size={9} className="text-purple-400 shrink-0" />
+          </div>
+          <h3 className="text-xs sm:text-sm font-headline font-black text-purple-300 leading-none mt-0.5 truncate font-mono">
+            {formatTime(elapsedSeconds)}
+          </h3>
+        </div>
+      </div>
+
+      {/* Main 8x8 Board (Touch-locked: swipe or tap gems with zero whole-page movement) */}
+      <div className="relative w-full max-w-[min(100%,min(46vh,340px))] aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden shrink-0 touch-none select-none overscroll-none">
+        <div id="game-board-grid" className="grid grid-cols-8 grid-rows-8 w-full h-full gap-0.5 sm:gap-1 touch-none select-none">
           {board.map((row, rIdx) => row.map((gem, cIdx) => {
             const style = GEM_STYLES[gem.type] || GEM_STYLES.sapphire;
             const isSelected = selectedGem?.id === gem.id;
@@ -1053,7 +1116,11 @@ export const GameView: React.FC<GameViewProps> = ({
               <div
                 key={gem.id}
                 onClick={() => handleGemClick(gem)}
-                className="relative w-full h-full aspect-square flex items-center justify-center"
+                onTouchStart={(e) => handleTouchStart(e, gem)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
+                className="relative w-full h-full aspect-square flex items-center justify-center touch-none select-none"
               >
                 <AnimatePresence>
                   {!gem.isMatched && (
@@ -1131,7 +1198,11 @@ export const GameView: React.FC<GameViewProps> = ({
           {onOpenShop && (
             <button
               type="button"
-              onClick={() => { triggerHaptic('click'); onOpenShop(); }}
+              onClick={() => {
+                triggerHaptic('click');
+                setIsPaused(true);
+                onOpenShop();
+              }}
               className="text-[8px] sm:text-[9px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer"
             >
               <ShoppingBag size={11} /> + Emporium

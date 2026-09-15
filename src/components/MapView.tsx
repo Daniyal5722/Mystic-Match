@@ -266,7 +266,7 @@ export const MapView: React.FC<MapViewProps> = ({
               initial={{ scale: 0.9, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 15 }}
-              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/60 rounded-2xl shadow-[0_10px_35px_rgba(59,130,246,0.35)] w-full max-w-xs sm:max-w-sm p-4 sm:p-6 relative flex flex-col gap-3 sm:gap-4 text-left max-h-[90dvh] overflow-y-auto"
+              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/60 rounded-2xl shadow-[0_10px_35px_rgba(59,130,246,0.35)] w-full max-w-xs sm:max-w-sm p-4 sm:p-6 relative flex flex-col gap-3 sm:gap-4 text-left max-h-[90dvh] overflow-y-auto allow-scroll"
             >
               <button
                 className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-indigo-950/80 border border-indigo-400/40 text-violet-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
@@ -343,7 +343,7 @@ export const MapView: React.FC<MapViewProps> = ({
               initial={{ scale: 0.9, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 15 }}
-              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-rose-500/75 rounded-2xl shadow-[0_10px_35px_rgba(244,63,94,0.35)] w-full max-w-xs sm:max-w-sm p-4 sm:p-6 relative flex flex-col gap-3 sm:gap-4 text-left max-h-[90dvh] overflow-y-auto"
+              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-rose-500/75 rounded-2xl shadow-[0_10px_35px_rgba(244,63,94,0.35)] w-full max-w-xs sm:max-w-sm p-4 sm:p-6 relative flex flex-col gap-3 sm:gap-4 text-left max-h-[90dvh] overflow-y-auto allow-scroll"
             >
               <button
                 className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-indigo-950/80 border border-indigo-400/40 text-violet-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
