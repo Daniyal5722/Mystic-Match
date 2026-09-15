@@ -38,7 +38,7 @@ export const OnboardingOverlay: React.FC<OnboardingOverlayProps> = ({ onComplete
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#090f2b]/75 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#090f2b]/75 backdrop-blur-md">
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -46,7 +46,7 @@ export const OnboardingOverlay: React.FC<OnboardingOverlayProps> = ({ onComplete
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -15 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-cyan-400/60 p-6 shadow-[0_10px_35px_rgba(59,130,246,0.35)] rounded-2xl flex flex-col items-center text-center select-none text-white"
+          className="relative w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-cyan-400/60 p-5 sm:p-6 shadow-[0_10px_35px_rgba(59,130,246,0.35)] rounded-2xl flex flex-col items-center text-center select-none text-white max-h-[90dvh] overflow-y-auto"
         >
           {/* Progress dots */}
           <div className="flex justify-center gap-2 mb-3">

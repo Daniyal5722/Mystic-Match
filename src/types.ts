@@ -29,6 +29,8 @@ export interface Achievement {
   rewardValue: number;
 }
 
+export type DifficultyMode = 'easy' | 'medium' | 'hard' | 'extreme';
+
 export interface GameState {
   name: string;
   coins: number;
@@ -50,6 +52,7 @@ export interface GameState {
   onboardingCompleted: boolean;
   darkMode: boolean;
   easyMode: boolean;
+  difficultyMode?: DifficultyMode;
   highContrast: boolean;
   screenReaderEnabled: boolean;
   soundEnabled: boolean;

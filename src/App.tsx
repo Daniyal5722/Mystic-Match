@@ -44,6 +44,7 @@ export default function App() {
       onboardingCompleted: true,
       darkMode: false,
       easyMode: false,
+      difficultyMode: 'medium',
       highContrast: false,
       screenReaderEnabled: false,
       soundEnabled: true,
@@ -72,9 +73,12 @@ export default function App() {
       if (cached) {
         const parsed = JSON.parse(cached);
         const syncedDiamonds = parsed.diamonds ?? parsed.gemsCount ?? 0;
+        const resolvedDifficulty = parsed.difficultyMode || (parsed.easyMode ? 'easy' : 'medium');
         return {
           ...defaultState,
           ...parsed,
+          difficultyMode: resolvedDifficulty,
+          easyMode: resolvedDifficulty === 'easy',
           boostersCount: {
             ...defaultState.boostersCount,
             ...(parsed.boostersCount || {}),
@@ -290,32 +294,32 @@ export default function App() {
       </AnimatePresence>
 
       {/* Primary Mobile-first Responsive Container */}
-      <div className="w-full max-w-md mx-auto min-h-screen md:min-h-0 md:h-[94vh] md:max-h-[890px] bg-gradient-to-b from-[#111c47] via-[#131f4e] to-[#0e163b] border-x md:border-2 border-indigo-500/50 relative flex flex-col justify-between overflow-hidden pt-16 pb-19 select-none shadow-[0_0_50px_rgba(59,130,246,0.3)] md:rounded-3xl">
-        {/* Fixed Header */}
-        <header className="fixed top-0 max-w-md w-full z-40 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
-          <div className="h-16 px-4 flex items-center justify-between">
+      <div className="w-full max-w-md mx-auto h-[100dvh] md:h-[94vh] md:max-h-[890px] bg-gradient-to-b from-[#111c47] via-[#131f4e] to-[#0e163b] border-x md:border-2 border-indigo-500/50 relative flex flex-col overflow-hidden select-none shadow-[0_0_50px_rgba(59,130,246,0.3)] md:rounded-3xl">
+        {/* Responsive Header (Natural flex child, centered and contained) */}
+        <header className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
+          <div className="h-14 sm:h-16 px-2.5 sm:px-4 flex items-center justify-between gap-1">
             <div
               onClick={() => setTab('home')}
-              className="flex items-center gap-2 cursor-pointer group"
+              className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group min-w-0"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-lg shadow-[0_0_12px_rgba(34,211,238,0.5)] border border-cyan-300">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm sm:text-lg shadow-[0_0_12px_rgba(34,211,238,0.5)] border border-cyan-300 shrink-0">
                 🔮
               </div>
-              <span className="font-headline font-black uppercase tracking-wider text-sm text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-cyan-300 group-hover:brightness-110 transition-all">
+              <span className="font-headline font-black uppercase tracking-wider text-xs sm:text-sm text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-cyan-300 group-hover:brightness-110 transition-all truncate">
                 Mystic Match
               </span>
             </div>
 
             {/* Top stats badges & Profile button */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* Coins Counter */}
-              <div className="flex items-center gap-1.5 bg-[#172559] px-2.5 py-1 rounded-xl border border-amber-400/50 font-headline font-black text-xs text-amber-300 shadow-sm">
+              <div className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-amber-400/50 font-headline font-black text-[10px] sm:text-xs text-amber-300 shadow-sm">
                 <span>🪙</span>
                 <span>{gameState.coins.toLocaleString()}</span>
               </div>
 
               {/* Diamonds Counter */}
-              <div className="flex items-center gap-1.5 bg-[#172559] px-2.5 py-1 rounded-xl border border-cyan-400/50 font-headline font-black text-xs text-cyan-300 shadow-sm">
+              <div className="flex items-center gap-1 bg-[#172559] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl border border-cyan-400/50 font-headline font-black text-[10px] sm:text-xs text-cyan-300 shadow-sm">
                 <span>💎</span>
                 <span>{gameState.diamonds.toLocaleString()}</span>
               </div>
@@ -326,10 +330,10 @@ export default function App() {
                   triggerHapticFeedback();
                   setIsProfileOpen(true);
                 }}
-                className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white border border-cyan-300 flex items-center justify-center font-headline font-bold text-xs shadow-[0_0_12px_rgba(34,211,238,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white border border-cyan-300 flex items-center justify-center font-headline font-bold text-xs shadow-[0_0_12px_rgba(34,211,238,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
                 title="Player Profile"
               >
-                <User size={15} />
+                <User size={14} />
               </button>
             </div>
           </div>
@@ -337,16 +341,16 @@ export default function App() {
 
         {/* Floating Offline connection state indicator */}
         {gameState.offline && (
-          <div className="mx-4 mt-2.5 bg-amber-950/70 border border-amber-400/50 rounded-xl p-2 flex items-center justify-between gap-2 shadow-md">
-            <span className="text-[10px] font-headline font-black text-amber-300 uppercase flex items-center gap-1">
-              <WifiOff size={12} /> Offline Mode Active
+          <div className="mx-3 sm:mx-4 mt-2 bg-amber-950/70 border border-amber-400/50 rounded-xl p-2 flex items-center justify-between gap-2 shadow-md shrink-0">
+            <span className="text-[10px] font-headline font-black text-amber-300 uppercase flex items-center gap-1 truncate">
+              <WifiOff size={12} className="shrink-0" /> Offline Mode Active
             </span>
-            <span className="text-[9px] font-bold text-amber-200">Saved in LocalStorage</span>
+            <span className="text-[9px] font-bold text-amber-200 shrink-0">Saved Locally</span>
           </div>
         )}
 
         {/* Interactive Scrollable Active Tab Viewport */}
-        <main className="flex-1 p-4 overflow-y-auto relative flex flex-col justify-start">
+        <main className="flex-1 min-h-0 w-full p-2.5 sm:p-4 overflow-y-auto overflow-x-hidden relative flex flex-col justify-start">
           <AnimatePresence mode="wait">
             <motion.div
               key={gameState.activeTab}
@@ -501,62 +505,62 @@ export default function App() {
         </main>
 
         {/* Universal Sticky Bottom Navigation Bar (4-slot Grid: HOME, MAP, PLAY, CONFIG) */}
-        <nav className="fixed bottom-0 max-w-md w-full z-40 bg-[#111a44]/95 backdrop-blur-md border-t-2 border-indigo-500/40 pb-safe">
-          <div className="grid grid-cols-4 items-center h-16 px-2">
+        <nav className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-t-2 border-indigo-500/40 pb-safe">
+          <div className="grid grid-cols-4 items-center h-14 sm:h-16 px-1.5 sm:px-2">
             {/* Tab: Home */}
             <button
               id="home-tab"
               onClick={() => setTab('home')}
-              className={`flex flex-col items-center justify-center gap-1 h-12 rounded-xl transition-all cursor-pointer ${
+              className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'home'
-                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-1'
+                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                   : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
               }`}
             >
-              <Home size={18} />
-              <span className="text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Home</span>
+              <Home size={17} />
+              <span className="text-[8px] sm:text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Home</span>
             </button>
 
             {/* Tab: Map */}
             <button
               id="map-tab"
               onClick={() => setTab('map')}
-              className={`flex flex-col items-center justify-center gap-1 h-12 rounded-xl transition-all cursor-pointer ${
+              className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'map'
-                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-1'
+                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                   : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
               }`}
             >
-              <MapIcon size={18} />
-              <span className="text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Map</span>
+              <MapIcon size={17} />
+              <span className="text-[8px] sm:text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Map</span>
             </button>
 
             {/* Tab: Puzzle Grid (Play) */}
             <button
               id="game-board"
               onClick={() => setTab('game')}
-              className={`flex flex-col p-2 min-w-[64px] items-center justify-center gap-1 h-12 rounded-xl transition-all cursor-pointer ${
+              className={`flex flex-col p-1.5 min-w-[56px] items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'game'
-                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-1'
+                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                   : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50 hover:scale-105 active:scale-95 animate-glow-pulse'
               }`}
             >
-              <Play size={18} className="fill-current" />
-              <span className="text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Play</span>
+              <Play size={17} className="fill-current" />
+              <span className="text-[8px] sm:text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Play</span>
             </button>
 
             {/* Tab: Settings (Config) */}
             <button
               id="settings-tab"
               onClick={() => setTab('settings')}
-              className={`flex flex-col items-center justify-center gap-1 h-12 rounded-xl transition-all cursor-pointer ${
+              className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'settings'
-                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-1'
+                  ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                   : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
               }`}
             >
-              <SettingsIcon size={18} />
-              <span className="text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Config</span>
+              <SettingsIcon size={17} />
+              <span className="text-[8px] sm:text-[9px] uppercase font-headline font-bold tracking-wider leading-none">Config</span>
             </button>
           </div>
         </nav>

@@ -31,29 +31,29 @@ export const MapView: React.FC<MapViewProps> = ({
       // Arrange levels so Stage 1 is at the bottom, and Stage 50 is at the top
       // Spacing: 140px per stage
       const y = (levels.length - i) * 140 + 80;
-      // Beautiful winding sine curve representing floating islands in the celestial sky
-      const x = 160 + Math.sin(i * 1.1) * 75;
+      // Fluid percentage horizontal position (between 25% and 75%) that adapts perfectly to any screen width
+      const xPct = 50 + Math.sin(i * 1.1) * 26;
       return {
         ...lvl,
-        x,
+        xPct,
         y,
       };
     });
   }, [levels]);
 
-  // Create smooth curved lines (SVG quadratic curves) between map nodes
+  // Create smooth curved lines (SVG quadratic curves) between map nodes using percentages
   const pathD = useMemo(() => {
     if (mapNodes.length === 0) return '';
     // Sort ascending by level ID to draw path from bottom (Stage 1) up to top (Stage 50)
     const sorted = [...mapNodes].sort((a, b) => a.id - b.id);
-    let d = `M ${sorted[0].x} ${sorted[0].y}`;
+    let d = `M ${sorted[0].xPct} ${sorted[0].y}`;
     for (let idx = 1; idx < sorted.length; idx++) {
       const prevNode = sorted[idx - 1];
       const currNode = sorted[idx];
       const cpY = (prevNode.y + currNode.y) / 2;
       // Control point offset creates a lovely curved wavy path
-      const cpX = (prevNode.x + currNode.x) / 2 + (prevNode.id % 2 === 0 ? 20 : -20);
-      d += ` Q ${cpX} ${cpY}, ${currNode.x} ${currNode.y}`;
+      const cpX = (prevNode.xPct + currNode.xPct) / 2 + (prevNode.id % 2 === 0 ? 6 : -6);
+      d += ` Q ${cpX} ${cpY}, ${currNode.xPct} ${currNode.y}`;
     }
     return d;
   }, [mapNodes]);
@@ -135,7 +135,7 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* Main Scrollable Level Map Container */}
       <div
         ref={containerRef}
-        className="relative w-full h-[540px] bg-gradient-to-b from-[#162357] via-[#121c47] to-[#0e163b] border-2 border-indigo-400/50 rounded-2xl shadow-[0_4px_25px_rgba(59,130,246,0.25)] overflow-y-scroll p-4 select-none scroll-smooth"
+        className="relative w-full h-[min(540px,65vh)] bg-gradient-to-b from-[#162357] via-[#121c47] to-[#0e163b] border-2 border-indigo-400/50 rounded-2xl shadow-[0_4px_25px_rgba(59,130,246,0.25)] overflow-y-scroll overflow-x-hidden p-3 sm:p-4 select-none scroll-smooth"
       >
         {/* Dynamic scroll indicator on map */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-[9px] font-headline font-bold uppercase tracking-widest text-cyan-400 bg-indigo-950/85 border border-cyan-400/40 px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 animate-pulse">
@@ -153,13 +153,16 @@ export const MapView: React.FC<MapViewProps> = ({
           {/* Winding Path SVG Layer */}
           <svg
             className="absolute top-0 left-0 w-full pointer-events-none z-0"
+            viewBox={`0 0 100 ${canvasHeight}`}
+            preserveAspectRatio="none"
             style={{ height: `${canvasHeight}px` }}
           >
             <path
               d={pathD}
               fill="none"
               stroke="#6366f1"
-              strokeDasharray="8 6"
+              strokeDasharray="2 1.5"
+              vectorEffect="non-scaling-stroke"
               strokeWidth="4"
               className="opacity-60"
             />
@@ -168,13 +171,13 @@ export const MapView: React.FC<MapViewProps> = ({
           {/* Map Nodes Container */}
           <div className="relative z-10 w-full h-full">
             {mapNodes.map((lvl) => {
-              const nodeClass = lvl.isBoss ? 'w-18 h-18 text-2xl' : 'w-13 h-13 text-base';
+              const nodeClass = lvl.isBoss ? 'w-16 h-16 sm:w-18 sm:h-18 text-xl sm:text-2xl' : 'w-12 h-12 sm:w-13 sm:h-13 text-sm sm:text-base';
               
               return (
                 <div
                   key={lvl.id}
                   className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer group"
-                  style={{ left: `${lvl.x}px`, top: `${lvl.y}px` }}
+                  style={{ left: `${lvl.xPct}%`, top: `${lvl.y}px` }}
                   onClick={() => openLevelDetails(lvl)}
                 >
                   {/* Star Display (only for normal nodes or completed boss nodes) */}
@@ -258,12 +261,12 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* Level Details Modal */}
       <AnimatePresence>
         {selectedLevel && (
-          <div className="fixed inset-0 z-50 bg-[#090f2b]/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-[#090f2b]/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 15 }}
-              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/60 rounded-2xl shadow-[0_10px_35px_rgba(59,130,246,0.35)] w-full max-w-sm p-6 relative flex flex-col gap-4 text-left"
+              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/60 rounded-2xl shadow-[0_10px_35px_rgba(59,130,246,0.35)] w-full max-w-xs sm:max-w-sm p-4 sm:p-6 relative flex flex-col gap-3 sm:gap-4 text-left max-h-[90dvh] overflow-y-auto"
             >
               <button
                 className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-indigo-950/80 border border-indigo-400/40 text-violet-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
@@ -276,7 +279,7 @@ export const MapView: React.FC<MapViewProps> = ({
                 <span className="font-headline font-bold text-[10px] uppercase tracking-widest text-cyan-300">
                   Stage Details
                 </span>
-                <h2 className="font-headline font-black text-2xl text-white leading-tight mt-0.5">
+                <h2 className="font-headline font-black text-xl sm:text-2xl text-white leading-tight mt-0.5">
                   Stage {selectedLevel.id}: {selectedLevel.name}
                 </h2>
               </div>
@@ -335,12 +338,12 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* Dynamic Boss Challenge Preview Modal */}
       <AnimatePresence>
         {selectedBossLevel && (
-          <div className="fixed inset-0 z-50 bg-[#090f2b]/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-[#090f2b]/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 15 }}
-              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-rose-500/75 rounded-2xl shadow-[0_10px_35px_rgba(244,63,94,0.35)] w-full max-w-sm p-6 relative flex flex-col gap-4 text-left"
+              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-rose-500/75 rounded-2xl shadow-[0_10px_35px_rgba(244,63,94,0.35)] w-full max-w-xs sm:max-w-sm p-4 sm:p-6 relative flex flex-col gap-3 sm:gap-4 text-left max-h-[90dvh] overflow-y-auto"
             >
               <button
                 className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-indigo-950/80 border border-indigo-400/40 text-violet-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"

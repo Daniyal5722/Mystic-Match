@@ -72,17 +72,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     triggerPushNotification('System Theme Changed', 'Dark mode is now updated.');
   };
 
-  const toggleEasyMode = () => {
+  const currentDifficulty = gameState.difficultyMode || (gameState.easyMode ? 'easy' : 'medium');
+
+  const setDifficulty = (mode: 'easy' | 'medium' | 'hard' | 'extreme') => {
     triggerHaptic();
-    setGameState((prev) => {
-      const nextEasy = !prev.easyMode;
-      return { ...prev, easyMode: nextEasy };
-    });
-    if (!gameState.easyMode) {
-      triggerPushNotification('Easy Mode Activated 🌟', 'Targets are lowered and moves are increased!');
-    } else {
-      triggerPushNotification('Normal Mode Activated 🔮', 'Standard difficulty goals restored.');
-    }
+    setGameState((prev) => ({
+      ...prev,
+      difficultyMode: mode,
+      easyMode: mode === 'easy',
+    }));
+
+    const descriptions = {
+      easy: '60 moves & lowered targets for relaxed play 🌟',
+      medium: '45 moves & standard targets for balanced play 🔮',
+      hard: '35 moves & +30% targets for skilled players ⚡',
+      extreme: '25 moves & +60% targets for true masters 🔥',
+    };
+
+    triggerPushNotification(
+      `Difficulty: ${mode.toUpperCase()}`,
+      descriptions[mode]
+    );
   };
 
   const toggleHighContrast = () => {
@@ -221,21 +231,115 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           />
         </div>
 
-        {/* Easy Mode Toggle */}
-        <div className="bg-[#142054]/90 border border-emerald-400/30 rounded-xl p-3 flex items-center justify-between shadow-[0_2px_12px_rgba(16,185,129,0.05)]">
-          <div className="flex items-center gap-2.5">
-            <Sparkles size={16} className="text-emerald-400 animate-pulse" />
-            <div>
-              <h5 className="font-headline font-bold text-xs uppercase leading-none text-emerald-300">Easy Mode</h5>
-              <p className="text-[10px] text-emerald-100/70 mt-0.5">Fewer target requirements and 60 moves per game</p>
+        {/* Difficulty Mode Selection Module (Easy, Medium, Hard, Extreme) */}
+        <div className="bg-[#142054] border border-indigo-400/50 rounded-2xl p-3 sm:p-4 shadow-[0_4px_20px_rgba(59,130,246,0.2)]">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-amber-400 animate-pulse shrink-0" />
+              <div>
+                <h4 className="font-headline font-black text-xs uppercase text-white leading-none">
+                  Game Difficulty Mode
+                </h4>
+                <p className="text-[10px] text-violet-300 mt-0.5">
+                  Adjusts moves allowance and objective thresholds
+                </p>
+              </div>
             </div>
+            <span className={`px-2 py-0.5 rounded-full text-[9px] font-headline font-black uppercase tracking-wider ${
+              currentDifficulty === 'easy' ? 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/50' :
+              currentDifficulty === 'medium' ? 'bg-cyan-400/20 text-cyan-300 border border-cyan-400/50' :
+              currentDifficulty === 'hard' ? 'bg-amber-400/20 text-amber-300 border border-amber-400/50' :
+              'bg-rose-500/20 text-rose-300 border border-rose-500/50 animate-pulse'
+            }`}>
+              {currentDifficulty}
+            </span>
           </div>
-          <input
-            type="checkbox"
-            checked={!!gameState.easyMode}
-            onChange={toggleEasyMode}
-            className="w-5 h-5 accent-emerald-400 cursor-pointer"
-          />
+
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            {/* Easy */}
+            <button
+              type="button"
+              onClick={() => setDifficulty('easy')}
+              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[64px] ${
+                currentDifficulty === 'easy'
+                  ? 'bg-gradient-to-b from-emerald-950/80 to-emerald-900/60 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)] ring-1 ring-emerald-400'
+                  : 'bg-[#0e173b]/80 border-indigo-500/30 hover:border-emerald-400/50 hover:bg-[#121c47]'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-headline font-black text-xs uppercase text-emerald-300">
+                  Easy
+                </span>
+                <span className="text-[10px]">🌱</span>
+              </div>
+              <div className="text-[9px] text-emerald-200/80 mt-1">
+                <span className="font-bold text-white">60 moves</span> • lowered targets
+              </div>
+            </button>
+
+            {/* Medium */}
+            <button
+              type="button"
+              onClick={() => setDifficulty('medium')}
+              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[64px] ${
+                currentDifficulty === 'medium'
+                  ? 'bg-gradient-to-b from-cyan-950/80 to-blue-900/60 border-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.3)] ring-1 ring-cyan-400'
+                  : 'bg-[#0e173b]/80 border-indigo-500/30 hover:border-cyan-400/50 hover:bg-[#121c47]'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-headline font-black text-xs uppercase text-cyan-300">
+                  Medium
+                </span>
+                <span className="text-[10px]">⚖️</span>
+              </div>
+              <div className="text-[9px] text-cyan-200/80 mt-1">
+                <span className="font-bold text-white">45 moves</span> • standard balance
+              </div>
+            </button>
+
+            {/* Hard */}
+            <button
+              type="button"
+              onClick={() => setDifficulty('hard')}
+              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[64px] ${
+                currentDifficulty === 'hard'
+                  ? 'bg-gradient-to-b from-amber-950/80 to-orange-950/60 border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.3)] ring-1 ring-amber-400'
+                  : 'bg-[#0e173b]/80 border-indigo-500/30 hover:border-amber-400/50 hover:bg-[#121c47]'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-headline font-black text-xs uppercase text-amber-300">
+                  Hard
+                </span>
+                <span className="text-[10px]">⚡</span>
+              </div>
+              <div className="text-[9px] text-amber-200/80 mt-1">
+                <span className="font-bold text-white">35 moves</span> • +30% targets
+              </div>
+            </button>
+
+            {/* Extreme */}
+            <button
+              type="button"
+              onClick={() => setDifficulty('extreme')}
+              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[64px] ${
+                currentDifficulty === 'extreme'
+                  ? 'bg-gradient-to-b from-rose-950/80 to-red-950/60 border-rose-400 shadow-[0_0_12px_rgba(251,113,133,0.3)] ring-1 ring-rose-400'
+                  : 'bg-[#0e173b]/80 border-indigo-500/30 hover:border-rose-400/50 hover:bg-[#121c47]'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-headline font-black text-xs uppercase text-rose-300">
+                  Extreme
+                </span>
+                <span className="text-[10px]">🔥</span>
+              </div>
+              <div className="text-[9px] text-rose-200/80 mt-1">
+                <span className="font-bold text-white">25 moves</span> • +60% targets
+              </div>
+            </button>
+          </div>
         </div>
 
         {/* High Contrast */}

@@ -36,7 +36,7 @@ export const PlayerSetupOverlay: React.FC<PlayerSetupOverlayProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-[#090f2b]/85 backdrop-blur-md">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-3 sm:p-4 bg-[#090f2b]/85 backdrop-blur-md">
       {/* Floating magical atmospheric nebulas */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
       <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-purple-600/25 rounded-full blur-3xl pointer-events-none" />
@@ -45,7 +45,7 @@ export const PlayerSetupOverlay: React.FC<PlayerSetupOverlayProps> = ({
         initial={{ opacity: 0, scale: 0.9, y: 25 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', damping: 22, stiffness: 120 }}
-        className="relative w-full max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-cyan-400/70 p-7 shadow-[0_10px_40px_rgba(34,211,238,0.35)] text-center select-none rounded-2xl text-white overflow-hidden"
+        className="relative w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-cyan-400/70 p-5 sm:p-7 shadow-[0_10px_40px_rgba(34,211,238,0.35)] text-center select-none rounded-2xl text-white max-h-[90dvh] overflow-y-auto"
       >
         {/* Crystal Orb Icon */}
         <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-500 border-2 border-cyan-300 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(59,130,246,0.6)] mb-3">
