@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Home, Map as MapIcon, Settings as SettingsIcon, WifiOff, Play } from 'lucide-react';
+import { User, Home, Map as MapIcon, Settings as SettingsIcon, WifiOff, Play, LogOut } from 'lucide-react';
 import { GameState, Level } from './types';
 import { INITIAL_LEVELS } from './data';
 import { PlayerSetupOverlay } from './components/PlayerSetupOverlay';
@@ -11,10 +11,12 @@ import { MapView } from './components/MapView';
 import { GameView } from './components/GameView';
 import { SettingsView } from './components/SettingsView';
 import { NotificationToast } from './components/NotificationToast';
+import { ConfirmationModal } from './components/ConfirmationModal';
 
 import { playSound } from './audio';
 
 const LOCAL_STORAGE_KEY = 'mystic_match_data_v1';
+const ACTIVE_LEVEL_STORAGE_KEY = 'mystic_match_active_level_v1';
 
 export default function App() {
   // Global Game State
@@ -137,6 +139,11 @@ export default function App() {
     }
   };
 
+  // Track if a level is currently active and in progress
+  const [isLevelInProgress, setIsLevelInProgress] = useState<boolean>(false);
+  const [pendingNavigation, setPendingNavigation] = useState<'home' | 'map' | 'settings' | 'profile' | null>(null);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
+
   // Sync state to local storage on any modifications
   useEffect(() => {
     try {
@@ -160,6 +167,57 @@ export default function App() {
     speakAccessibility(descriptions[tab]);
   };
 
+  // Intercept destructive navigation while playing a level
+  const handleNavigation = (target: 'home' | 'map' | 'settings' | 'profile') => {
+    triggerHapticFeedback();
+    if (gameState.activeTab === 'game' && isLevelInProgress) {
+      setPendingNavigation(target);
+      setIsLeaveModalOpen(true);
+      return;
+    }
+    if (target === 'profile') {
+      setIsProfileOpen(true);
+    } else {
+      setTab(target);
+    }
+  };
+
+  const handleConfirmLeaveGame = () => {
+    triggerHapticFeedback();
+    setIsLeaveModalOpen(false);
+    setIsLevelInProgress(false);
+    if (pendingNavigation === 'profile') {
+      setIsProfileOpen(true);
+    } else if (pendingNavigation) {
+      setTab(pendingNavigation);
+    }
+    setPendingNavigation(null);
+  };
+
+  const handleCancelLeaveGame = () => {
+    triggerHapticFeedback();
+    setIsLeaveModalOpen(false);
+    setPendingNavigation(null);
+  };
+
+  // Intercept Android / browser back button when inside an active game
+  useEffect(() => {
+    if (gameState.activeTab === 'game' && isLevelInProgress) {
+      window.history.pushState({ inGame: true }, '');
+
+      const handlePopState = () => {
+        window.history.pushState({ inGame: true }, '');
+        setPendingNavigation('map');
+        setIsLeaveModalOpen(true);
+      };
+
+      window.addEventListener('popstate', handlePopState);
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [gameState.activeTab, isLevelInProgress]);
+
   // Trigger Simulated Automatic offline progress synchronization
   const triggerAutomaticSync = () => {
     if (gameState.offline) return;
@@ -180,6 +238,12 @@ export default function App() {
   const resetGameProgress = () => {
     triggerHapticFeedback();
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+    try {
+      localStorage.removeItem(ACTIVE_LEVEL_STORAGE_KEY);
+    } catch (e) {
+      // safe fallback
+    }
+    setIsLevelInProgress(false);
     setGameState({
       name: '',
       coins: 0,
@@ -299,7 +363,7 @@ export default function App() {
         <header className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
           <div className="h-14 sm:h-16 px-2.5 sm:px-4 flex items-center justify-between gap-1">
             <div
-              onClick={() => setTab('home')}
+              onClick={() => handleNavigation('home')}
               className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group min-w-0"
             >
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm sm:text-lg shadow-[0_0_12px_rgba(34,211,238,0.5)] border border-cyan-300 shrink-0">
@@ -326,10 +390,7 @@ export default function App() {
 
               {/* Profile Button */}
               <button
-                onClick={() => {
-                  triggerHapticFeedback();
-                  setIsProfileOpen(true);
-                }}
+                onClick={() => handleNavigation('profile')}
                 className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white border border-cyan-300 flex items-center justify-center font-headline font-bold text-xs shadow-[0_0_12px_rgba(34,211,238,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
                 title="Player Profile"
               >
@@ -401,6 +462,7 @@ export default function App() {
                   setTab={setTab}
                   triggerHaptic={triggerHapticFeedback}
                   triggerPushNotification={triggerPushNotification}
+                  onSetLevelInProgress={setIsLevelInProgress}
                   onUpdateBoosters={(newBoosters) => {
                     setGameState((prev) => ({
                       ...prev,
@@ -510,7 +572,8 @@ export default function App() {
             {/* Tab: Home */}
             <button
               id="home-tab"
-              onClick={() => setTab('home')}
+              type="button"
+              onClick={() => handleNavigation('home')}
               className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'home'
                   ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
@@ -524,7 +587,8 @@ export default function App() {
             {/* Tab: Map */}
             <button
               id="map-tab"
-              onClick={() => setTab('map')}
+              type="button"
+              onClick={() => handleNavigation('map')}
               className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'map'
                   ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
@@ -538,7 +602,12 @@ export default function App() {
             {/* Tab: Puzzle Grid (Play) */}
             <button
               id="game-board"
-              onClick={() => setTab('game')}
+              type="button"
+              onClick={() => {
+                if (gameState.activeTab !== 'game') {
+                  setTab('game');
+                }
+              }}
               className={`flex flex-col p-1.5 min-w-[56px] items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'game'
                   ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
@@ -552,7 +621,8 @@ export default function App() {
             {/* Tab: Settings (Config) */}
             <button
               id="settings-tab"
-              onClick={() => setTab('settings')}
+              type="button"
+              onClick={() => handleNavigation('settings')}
               className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                 gameState.activeTab === 'settings'
                   ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
@@ -564,6 +634,19 @@ export default function App() {
             </button>
           </div>
         </nav>
+
+        {/* Global Navigation Guard Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={isLeaveModalOpen}
+          title="Leave Game?"
+          message="Your current level is still in progress. Do you want to leave the game?"
+          confirmLabel="Quit Game"
+          cancelLabel="Continue Playing"
+          onConfirm={handleConfirmLeaveGame}
+          onCancel={handleCancelLeaveGame}
+          isDestructive={true}
+          icon={<LogOut className="text-rose-400" size={24} />}
+        />
       </div>
     </div>
   );

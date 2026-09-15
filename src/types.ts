@@ -67,6 +67,21 @@ export interface GameState {
   };
   achievements: Achievement[];
   lastClaimedDaily: string | null; // Date format: YYYY-MM-DD
+  activeLevelSession?: ActiveLevelSession | null;
+}
+
+export interface ActiveLevelSession {
+  levelId: number;
+  difficultyMode: DifficultyMode;
+  board: BoardGem[][];
+  score: number;
+  movesLeft: number;
+  gemsCollected: number;
+  elapsedSeconds: number;
+  objectiveTarget: number;
+  objectiveType: GemType;
+  selectedGemId?: string | null;
+  savedAt: number;
 }
 
 export type GemType = 'ruby' | 'sapphire' | 'emerald' | 'topaz' | 'amethyst' | 'prism';
