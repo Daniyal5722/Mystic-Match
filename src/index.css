@@ -177,3 +177,19 @@ html, body, #root {
   border: 1.5px solid rgba(34, 211, 238, 0.4) !important;
 }
 
+/* Fluid GameView & Internal Board Container Scaling (320px to 430px viewports) */
+.game-view-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.game-board-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  aspect-ratio: 1 / 1;
+  width: clamp(240px, 100%, 420px);
+  max-width: min(100%, clamp(240px, 100%, 46dvh));
+}
+

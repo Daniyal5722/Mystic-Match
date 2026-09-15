@@ -1008,9 +1008,16 @@ export const GameView: React.FC<GameViewProps> = ({
   const objectiveStyle = GEM_STYLES[objectiveType];
 
   return (
-    <div className="flex flex-col w-full h-full justify-between select-none relative z-10 text-white max-w-full min-w-0 overscroll-none touch-none">
+    <div
+      id="game-view"
+      className="game-view-container flex flex-col w-full h-full justify-between select-none relative z-10 text-white max-w-full min-w-0 overscroll-none touch-none"
+      style={{ width: '100%', maxWidth: '100%' }}
+    >
       {/* Unified In-Game Header: Back to Map, Stage Title, Currency, and Pause */}
-      <div className="flex items-center justify-between mb-1 sm:mb-1.5 shrink-0 gap-1">
+      <div
+        className="flex items-center justify-between mb-1 sm:mb-1.5 shrink-0 gap-1 w-full max-w-full"
+        style={{ width: '100%', maxWidth: '100%' }}
+      >
         <button
           type="button"
           onClick={() => handleRequestLeave('map')}
@@ -1020,7 +1027,7 @@ export const GameView: React.FC<GameViewProps> = ({
           <ArrowLeft size={14} /> Map
         </button>
 
-        <div className="flex items-center gap-1 min-w-0 px-1 truncate">
+        <div className="flex items-center gap-1 min-w-0 px-1 truncate flex-1 justify-center">
           <h2 className="font-headline font-black text-xs sm:text-sm uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-white to-cyan-300 shadow-sm truncate">
             Stage {currentLevelId}: {levelData?.name || 'Arena'}
           </h2>
@@ -1053,9 +1060,19 @@ export const GameView: React.FC<GameViewProps> = ({
       </div>
 
       {/* High-Efficiency Unified In-Game HUD: Target Objective + Moves Left + Score + Time */}
-      <div className="grid grid-cols-4 gap-1 sm:gap-1.5 mb-1 shrink-0">
+      <div
+        className="grid w-full max-w-full gap-1 sm:gap-1.5 mb-1 shrink-0 min-w-0"
+        style={{
+          width: '100%',
+          maxWidth: '100%',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+        }}
+      >
         {/* 1. Target Objective */}
-        <div className={`p-1 sm:p-1.5 rounded-xl flex items-center gap-1 sm:gap-1.5 border ${objectiveType === 'ruby' ? 'border-rose-400/60 bg-rose-950/30' : 'border-cyan-400/60 bg-cyan-950/30'} min-w-0 shadow-sm`}>
+        <div
+          className={`p-1 sm:p-1.5 rounded-xl flex items-center gap-1 sm:gap-1.5 border ${objectiveType === 'ruby' ? 'border-rose-400/60 bg-rose-950/30' : 'border-cyan-400/60 bg-cyan-950/30'} min-w-0 w-full max-w-full shadow-sm`}
+          style={{ width: '100%', maxWidth: '100%' }}
+        >
           <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md flex items-center justify-center text-xs border ${objectiveStyle.border} bg-gradient-to-b ${objectiveStyle.bg} shrink-0`}>
             {objectiveStyle.icon}
           </div>
@@ -1068,7 +1085,10 @@ export const GameView: React.FC<GameViewProps> = ({
         </div>
 
         {/* 2. Moves Left */}
-        <div className="bg-gradient-to-b from-[#0c244c] to-[#081733] p-1 sm:p-1.5 border border-cyan-400/60 rounded-xl flex flex-col justify-center min-w-0 shadow-sm">
+        <div
+          className="bg-gradient-to-b from-[#0c244c] to-[#081733] p-1 sm:p-1.5 border border-cyan-400/60 rounded-xl flex flex-col justify-center min-w-0 w-full max-w-full shadow-sm"
+          style={{ width: '100%', maxWidth: '100%' }}
+        >
           <div className="flex items-center justify-between">
             <p className="text-[6.5px] uppercase font-headline font-bold text-cyan-300/80 leading-none">Moves</p>
             <Zap size={9} className="text-cyan-400 shrink-0" />
@@ -1079,7 +1099,10 @@ export const GameView: React.FC<GameViewProps> = ({
         </div>
 
         {/* 3. Score */}
-        <div className="bg-gradient-to-b from-[#2a1e0b] to-[#1a1306] p-1 sm:p-1.5 border border-amber-400/60 rounded-xl flex flex-col justify-center min-w-0 shadow-sm">
+        <div
+          className="bg-gradient-to-b from-[#2a1e0b] to-[#1a1306] p-1 sm:p-1.5 border border-amber-400/60 rounded-xl flex flex-col justify-center min-w-0 w-full max-w-full shadow-sm"
+          style={{ width: '100%', maxWidth: '100%' }}
+        >
           <div className="flex items-center justify-between">
             <p className="text-[6.5px] uppercase font-headline font-bold text-amber-300/80 leading-none">Score</p>
             <Trophy size={9} className="text-amber-400 shrink-0" />
@@ -1090,7 +1113,10 @@ export const GameView: React.FC<GameViewProps> = ({
         </div>
 
         {/* 4. Time */}
-        <div className="bg-gradient-to-b from-[#211145] to-[#130b2c] p-1 sm:p-1.5 border border-purple-400/60 rounded-xl flex flex-col justify-center min-w-0 shadow-sm">
+        <div
+          className="bg-gradient-to-b from-[#211145] to-[#130b2c] p-1 sm:p-1.5 border border-purple-400/60 rounded-xl flex flex-col justify-center min-w-0 w-full max-w-full shadow-sm"
+          style={{ width: '100%', maxWidth: '100%' }}
+        >
           <div className="flex items-center justify-between">
             <p className="text-[6.5px] uppercase font-headline font-bold text-purple-300/80 leading-none">Time</p>
             <Clock size={9} className="text-purple-400 shrink-0" />
@@ -1101,9 +1127,27 @@ export const GameView: React.FC<GameViewProps> = ({
         </div>
       </div>
 
-      {/* Main 8x8 Board (Touch-locked: swipe or tap gems with zero whole-page movement) */}
-      <div className="relative w-full max-w-[min(100%,min(46vh,340px))] aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden shrink-0 touch-none select-none overscroll-none">
-        <div id="game-board-grid" className="grid grid-cols-8 grid-rows-8 w-full h-full gap-0.5 sm:gap-1 touch-none select-none">
+      {/* Main 8x8 Board (Touch-locked, fluid grid units, clamp scaled for 320px-430px viewports) */}
+      <div
+        id="game-board-container"
+        className="game-board-container relative w-full max-w-full aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden shrink-0 touch-none select-none overscroll-none"
+        style={{
+          width: '100%',
+          maxWidth: 'min(100%, clamp(240px, 100%, 46dvh))',
+        }}
+      >
+        <div
+          id="game-board-grid"
+          className="grid gap-0.5 sm:gap-1 touch-none select-none max-w-full max-h-full"
+          style={{
+            width: '100%',
+            height: '100%',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
+            gridTemplateRows: 'repeat(8, minmax(0, 1fr))',
+          }}
+        >
           {board.map((row, rIdx) => row.map((gem, cIdx) => {
             const style = GEM_STYLES[gem.type] || GEM_STYLES.sapphire;
             const isSelected = selectedGem?.id === gem.id;
@@ -1120,7 +1164,13 @@ export const GameView: React.FC<GameViewProps> = ({
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
                 onTouchCancel={handleTouchEnd}
-                className="relative w-full h-full aspect-square flex items-center justify-center touch-none select-none"
+                className="relative aspect-square flex items-center justify-center touch-none select-none min-w-0 min-h-0"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                }}
               >
                 <AnimatePresence>
                   {!gem.isMatched && (
@@ -1130,9 +1180,15 @@ export const GameView: React.FC<GameViewProps> = ({
                       animate={{ scale: isSelected ? 0.85 : 1, opacity: 1, y: 0 }}
                       exit={{ scale: 0, opacity: 0 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 25, mass: 0.8 }}
-                      className={`w-full h-full rounded-md sm:rounded-lg bg-gradient-to-b ${style.bg} ${style.shadow} cursor-pointer relative flex items-center justify-center border ${style.border} overflow-hidden ${
+                      className={`rounded-md sm:rounded-lg bg-gradient-to-b ${style.bg} ${style.shadow} cursor-pointer relative flex items-center justify-center border ${style.border} overflow-hidden ${
                         isSelected ? 'ring-2 ring-white z-10' : ''
                       } ${isHinted ? 'ring-2 ring-amber-400 animate-pulse scale-105 z-10' : ''}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                      }}
                     >
                       <div className="absolute top-0.5 left-0.5 sm:left-1 w-2/3 h-1/3 bg-white/40 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />
                       <span className="text-sm sm:text-xl select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
@@ -1155,8 +1211,8 @@ export const GameView: React.FC<GameViewProps> = ({
             style={{
               left: `${(burst.x / 8) * 100 + 6}%`,
               top: `${(burst.y / 8) * 100 + 6}%`,
-              width: '32px',
-              height: '32px',
+              width: '28px',
+              height: '28px',
               backgroundColor: burst.color,
               boxShadow: `0 0 20px ${burst.color}`,
               transform: 'translate(-50%, -50%)',
@@ -1172,7 +1228,7 @@ export const GameView: React.FC<GameViewProps> = ({
               animate={{ scale: 1.1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: -15 }}
               transition={{ type: 'spring' }}
-              className="absolute pointer-events-none z-30 font-headline font-black text-sm sm:text-base text-amber-300 bg-[#0e163b]/95 px-3.5 py-1.5 rounded-xl border-2 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.7)] uppercase tracking-wider"
+              className="absolute pointer-events-none z-30 font-headline font-black text-sm sm:text-base text-amber-300 bg-[#0e163b]/95 px-3.5 py-1.5 rounded-xl border-2 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.7)] uppercase tracking-wider max-w-[90%]"
             >
               {comboText}
             </motion.div>
@@ -1181,8 +1237,8 @@ export const GameView: React.FC<GameViewProps> = ({
       </div>
 
       {/* Dynamic hint banner */}
-      <div className="text-center my-1 shrink-0 px-1">
-        <p className="text-[8px] sm:text-[9px] font-headline uppercase tracking-widest text-cyan-300 font-bold leading-none animate-pulse truncate">
+      <div className="text-center my-1 shrink-0 px-1 w-full max-w-full" style={{ width: '100%', maxWidth: '100%' }}>
+        <p className="text-[8px] sm:text-[9px] font-headline uppercase tracking-widest text-cyan-300 font-bold leading-none animate-pulse truncate w-full max-w-full">
           {boosterActive === 'hammer'
             ? '⚡ HAMMER ACTIVE — Tap any crystal to smash it!'
             : hintPair
@@ -1192,8 +1248,8 @@ export const GameView: React.FC<GameViewProps> = ({
       </div>
 
       {/* Complete Power Boosters Suite: Hint, Shuffle, Undo, Hammer, Rainbow & Shop link */}
-      <div className="shrink-0 mt-auto pt-0.5 pb-1">
-        <div className="flex items-center justify-between mb-1 px-1">
+      <div className="shrink-0 mt-auto pt-0.5 pb-1 w-full max-w-full" style={{ width: '100%', maxWidth: '100%' }}>
+        <div className="flex items-center justify-between mb-1 px-1 w-full max-w-full" style={{ width: '100%', maxWidth: '100%' }}>
           <p className="text-[8px] sm:text-[9px] font-headline font-bold uppercase tracking-wider text-violet-300">Power Boosters</p>
           {onOpenShop && (
             <button
@@ -1203,19 +1259,27 @@ export const GameView: React.FC<GameViewProps> = ({
                 setIsPaused(true);
                 onOpenShop();
               }}
-              className="text-[8px] sm:text-[9px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer"
+              className="text-[8px] sm:text-[9px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer shrink-0"
             >
               <ShoppingBag size={11} /> + Emporium
             </button>
           )}
         </div>
-        <div className="grid grid-cols-5 gap-1">
+        <div
+          className="grid gap-1 w-full max-w-full"
+          style={{
+            width: '100%',
+            maxWidth: '100%',
+            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+          }}
+        >
           {/* 1. Hint */}
           <button
             type="button"
             onClick={() => activateBooster('hint')}
             disabled={isProcessing || isPaused}
-            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-amber-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px]"
+            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-amber-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px] min-w-0"
+            style={{ width: '100%', maxWidth: '100%' }}
             title="Hint: Highlights a guaranteed match"
           >
             <div className="w-5 h-5 rounded-lg bg-yellow-500/20 border border-yellow-400/50 flex items-center justify-center mb-0.5 text-xs">💡</div>
@@ -1228,7 +1292,8 @@ export const GameView: React.FC<GameViewProps> = ({
             type="button"
             onClick={() => activateBooster('shuffle')}
             disabled={isProcessing || isPaused}
-            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-purple-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px]"
+            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-purple-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px] min-w-0"
+            style={{ width: '100%', maxWidth: '100%' }}
             title="Shuffle: Rearranges all board tiles"
           >
             <div className="w-5 h-5 rounded-lg bg-purple-500/20 border border-purple-400/50 flex items-center justify-center mb-0.5 text-xs">🔄</div>
@@ -1241,9 +1306,10 @@ export const GameView: React.FC<GameViewProps> = ({
             type="button"
             onClick={() => activateBooster('undo')}
             disabled={isProcessing || isPaused || !lastMoveSnapshot}
-            className={`flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border transition-all cursor-pointer active:scale-95 min-h-[46px] ${
+            className={`flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border transition-all cursor-pointer active:scale-95 min-h-[46px] min-w-0 ${
               lastMoveSnapshot ? 'border-cyan-400/60 hover:border-cyan-300' : 'border-indigo-400/20 opacity-40'
             }`}
+            style={{ width: '100%', maxWidth: '100%' }}
             title="Undo: Reverses your most recent move"
           >
             <div className="w-5 h-5 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center mb-0.5 text-xs">⏪</div>
@@ -1256,9 +1322,10 @@ export const GameView: React.FC<GameViewProps> = ({
             type="button"
             onClick={() => activateBooster('hammer')}
             disabled={isProcessing || isPaused}
-            className={`flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border transition-all cursor-pointer min-h-[46px] ${
+            className={`flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border transition-all cursor-pointer min-h-[46px] min-w-0 ${
               boosterActive === 'hammer' ? 'border-cyan-400 bg-cyan-950/50 shadow-[0_0_12px_rgba(34,211,238,0.4)] scale-105' : 'border-indigo-400/40 hover:border-amber-400'
             } disabled:opacity-50`}
+            style={{ width: '100%', maxWidth: '100%' }}
             title="Hammer: Smashes one selected tile"
           >
             <div className="w-5 h-5 rounded-lg bg-amber-500/20 border border-amber-400/50 flex items-center justify-center mb-0.5 text-xs">🔨</div>
@@ -1271,7 +1338,8 @@ export const GameView: React.FC<GameViewProps> = ({
             type="button"
             onClick={() => activateBooster('rainbow')}
             disabled={isProcessing || isPaused}
-            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-pink-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px]"
+            className="flex flex-col items-center justify-center p-1 rounded-xl bg-[#121c47] border border-indigo-400/40 hover:border-pink-400 transition-all cursor-pointer disabled:opacity-50 active:scale-95 min-h-[46px] min-w-0"
+            style={{ width: '100%', maxWidth: '100%' }}
             title="Magic Match: Transforms 4 tiles to the objective gem"
           >
             <div className="w-5 h-5 rounded-lg bg-pink-500/20 border border-pink-400/50 flex items-center justify-center mb-0.5 text-xs">🌈</div>
@@ -1288,6 +1356,7 @@ export const GameView: React.FC<GameViewProps> = ({
         {isPaused && !gameResult && !isLeaveConfirmOpen && !isRestartConfirmOpen && (
           <div
             className="fixed inset-0 z-50 bg-[#070c24]/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 touch-manipulation"
+            style={{ width: '100%', maxWidth: '100%' }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="pause-modal-title"
@@ -1296,14 +1365,15 @@ export const GameView: React.FC<GameViewProps> = ({
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/80 p-5 sm:p-6 max-w-xs w-full text-center rounded-2xl shadow-[0_12px_45px_rgba(30,58,138,0.5)] max-h-[90dvh] overflow-y-auto"
+              className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/80 p-5 sm:p-6 text-center rounded-2xl shadow-[0_12px_45px_rgba(30,58,138,0.5)] max-h-[90dvh] overflow-y-auto w-full max-w-full"
+              style={{ width: '100%', maxWidth: 'min(100%, 340px)' }}
             >
               <h3 id="pause-modal-title" className="text-xl sm:text-2xl font-headline font-black uppercase mb-1 text-white">
                 Game Paused
               </h3>
               <p className="text-xs text-indigo-300 mb-5">Take a breath, adventurer.</p>
 
-              <div className="flex flex-col gap-2.5 sm:gap-3">
+              <div className="flex flex-col gap-2.5 sm:gap-3 w-full max-w-full">
                 {/* 1. Resume */}
                 <button
                   type="button"
@@ -1374,6 +1444,7 @@ export const GameView: React.FC<GameViewProps> = ({
         {gameResult && (
           <div
             className="fixed inset-0 z-50 bg-[#070c24]/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 touch-manipulation"
+            style={{ width: '100%', maxWidth: '100%' }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="game-result-title"
@@ -1382,7 +1453,8 @@ export const GameView: React.FC<GameViewProps> = ({
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: -20 }}
-              className={`bg-gradient-to-b from-[#18265e] to-[#0f173b] border-2 p-5 sm:p-6 max-w-sm w-full text-center relative rounded-2xl max-h-[90dvh] overflow-y-auto ${gameResult === 'won' ? 'border-amber-400/80 shadow-[0_10px_40px_rgba(251,191,36,0.35)]' : 'border-rose-500/80 shadow-[0_10px_40px_rgba(244,63,94,0.35)]'}`}
+              className={`bg-gradient-to-b from-[#18265e] to-[#0f173b] border-2 p-5 sm:p-6 text-center relative rounded-2xl max-h-[90dvh] overflow-y-auto w-full max-w-full ${gameResult === 'won' ? 'border-amber-400/80 shadow-[0_10px_40px_rgba(251,191,36,0.35)]' : 'border-rose-500/80 shadow-[0_10px_40px_rgba(244,63,94,0.35)]'}`}
+              style={{ width: '100%', maxWidth: 'min(100%, 380px)' }}
             >
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#0c1433] mx-auto mb-3 sm:mb-4 border-2 border-indigo-400/40 flex items-center justify-center text-3xl sm:text-4xl shadow-lg">
                 {gameResult === 'won' ? '🏆' : '💀'}
@@ -1410,7 +1482,7 @@ export const GameView: React.FC<GameViewProps> = ({
                 </div>
               )}
 
-              <div className="flex flex-col gap-2 mt-2">
+              <div className="flex flex-col gap-2 mt-2 w-full max-w-full">
                 {gameResult === 'won' && (
                   <button
                     type="button"

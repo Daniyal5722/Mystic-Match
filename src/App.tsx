@@ -623,11 +623,12 @@ export default function App() {
 
         {/* Interactive Viewport (Strictly locked & fixed during gameplay, scrollable on Map/Home) */}
         <main
-          className={`flex-1 min-h-0 w-full relative flex flex-col select-none ${
+          className={`flex-1 min-h-0 w-full max-w-full relative flex flex-col select-none ${
             gameState.activeTab === 'game'
               ? 'p-2 sm:p-2.5 overflow-hidden overscroll-none touch-none h-full justify-between'
               : 'p-2.5 sm:p-4 overflow-y-auto overflow-x-hidden justify-start'
           }`}
+          style={{ width: '100%', maxWidth: '100%' }}
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -636,7 +637,8 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: -5 }}
               transition={{ duration: 0.15 }}
-              className="w-full h-full"
+              className="w-full h-full max-w-full min-w-0"
+              style={{ width: '100%', maxWidth: '100%' }}
             >
               {gameState.activeTab === 'home' && (
                 <HomeView
