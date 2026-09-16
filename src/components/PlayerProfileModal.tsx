@@ -52,13 +52,22 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#090e24]/80 backdrop-blur-md">
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-[#090e24]/85 backdrop-blur-md select-none touch-manipulation"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            triggerHaptic();
+            onClose();
+          }
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.92, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="relative w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-[#19255a] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/60 p-4 sm:p-5 shadow-[0_10px_35px_rgba(59,130,246,0.35)] rounded-2xl text-white select-none max-h-[90dvh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Close button */}
           <button

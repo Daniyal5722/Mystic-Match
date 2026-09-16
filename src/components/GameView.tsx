@@ -191,8 +191,15 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = React.memo(({
   return (
     <div
       id="game-board-container"
-      className="game-board-container relative w-full max-w-full aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none shrink"
-      style={{ touchAction: 'none' }}
+      className="game-board-container relative aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none"
+      style={{
+        touchAction: 'none',
+        height: '100%',
+        width: 'auto',
+        maxHeight: '100%',
+        maxWidth: '100%',
+        aspectRatio: '1 / 1',
+      }}
     >
       <div
         id="game-board-grid"
@@ -1146,8 +1153,8 @@ export const GameView: React.FC<GameViewProps> = ({
   return (
     <div
       id="game-view"
-      className="game-view-container flex flex-col w-full h-full justify-between select-none relative z-10 text-white max-w-full min-w-0 overscroll-none touch-none"
-      style={{ width: '100%', maxWidth: '100%' }}
+      className="game-view-container flex flex-col w-full h-full justify-between select-none relative z-10 text-white max-w-full min-w-0 overscroll-none touch-none p-safe px-2 sm:px-2.5"
+      style={{ width: '100%', maxWidth: '100%', height: '100%' }}
     >
       {/* Unified In-Game Header: Back to Map, Stage Title, Currency, and Pause */}
       <div
@@ -1263,18 +1270,20 @@ export const GameView: React.FC<GameViewProps> = ({
         </div>
       </div>
 
-      {/* Main 8x8 Board (Touch-locked, fluid grid units, clamp scaled for 320px-430px viewports) */}
-      <GameBoardGrid
-        board={board}
-        selectedGem={selectedGem}
-        hintPair={hintPair}
-        particleBursts={particleBursts}
-        comboText={comboText}
-        onGemClick={handleGemClick}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      />
+      {/* Board Scaling Wrapper: Uses flex-1 and min-h-0 to precisely occupy remaining vertical space between HUD and Boosters without overflow */}
+      <div className="flex-1 min-h-0 min-w-0 w-full flex items-center justify-center my-0.5 sm:my-1 overflow-hidden">
+        <GameBoardGrid
+          board={board}
+          selectedGem={selectedGem}
+          hintPair={hintPair}
+          particleBursts={particleBursts}
+          comboText={comboText}
+          onGemClick={handleGemClick}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        />
+      </div>
 
       {/* Dynamic hint banner */}
       <div className="text-center my-1 shrink-0 px-1 w-full max-w-full" style={{ width: '100%', maxWidth: '100%' }}>
@@ -1395,8 +1404,14 @@ export const GameView: React.FC<GameViewProps> = ({
       <AnimatePresence>
         {isPaused && !gameResult && !isLeaveConfirmOpen && !isRestartConfirmOpen && (
           <div
-            className="fixed inset-0 z-50 bg-[#070c24]/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 touch-manipulation"
+            className="fixed inset-0 z-[100] bg-[#070c24]/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 touch-manipulation"
             style={{ width: '100%', maxWidth: '100%' }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                triggerHaptic('click');
+                setIsPaused(false);
+              }
+            }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="pause-modal-title"
@@ -1483,7 +1498,7 @@ export const GameView: React.FC<GameViewProps> = ({
       <AnimatePresence>
         {gameResult && (
           <div
-            className="fixed inset-0 z-50 bg-[#070c24]/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 touch-manipulation overflow-hidden"
+            className="fixed inset-0 z-[100] bg-[#070c24]/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 touch-manipulation overflow-hidden"
             style={{ width: '100%', maxWidth: '100%' }}
             role="dialog"
             aria-modal="true"

@@ -101,15 +101,15 @@ export const MapView: React.FC<MapViewProps> = ({
   const canvasHeight = levels.length * 140 + 100;
 
   return (
-    <div className="flex flex-col w-full select-none relative z-10 pb-6 text-white gap-y-4 sm:gap-y-6 flex-1 overflow-y-auto">
+    <div className="flex flex-col w-full h-full min-h-0 select-none relative z-10 text-white flex-1 overflow-hidden">
       {/* Top Banner Context */}
-      <div className="mb-4 flex flex-col gap-1.5">
+      <div className="mb-2 sm:mb-3 shrink-0 flex flex-col gap-1 sm:gap-1.5">
         <div className="flex items-center justify-between">
           <div>
-            <span className="font-headline font-bold text-[10px] uppercase tracking-widest text-cyan-300 bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-cyan-400/40 leading-none">
+            <span className="font-headline font-bold text-[9px] sm:text-[10px] uppercase tracking-widest text-cyan-300 bg-indigo-950/80 px-2 py-0.5 rounded-full border border-cyan-400/40 leading-none">
               World 01 • Celestial Archipelago
             </span>
-            <h1 className="font-headline font-black text-2xl tracking-tight text-white mt-1.5 leading-none uppercase">
+            <h1 className="font-headline font-black text-lg sm:text-xl tracking-tight text-white mt-1 leading-none uppercase">
               THE FLOATING REALM
             </h1>
           </div>
@@ -117,14 +117,14 @@ export const MapView: React.FC<MapViewProps> = ({
             <span className="text-[9px] uppercase font-headline font-bold text-violet-300 leading-none">
               Progress
             </span>
-            <span className="font-headline font-black text-base mt-0.5 text-cyan-300 leading-none">
+            <span className="font-headline font-black text-sm sm:text-base mt-0.5 text-cyan-300 leading-none">
               {completedLevels} / {totalLevels}
             </span>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full h-3 bg-[#0c1433] border border-indigo-400/40 p-0.5 relative overflow-hidden rounded-full mt-1">
+        <div className="w-full h-2.5 sm:h-3 bg-[#0c1433] border border-indigo-400/40 p-0.5 relative overflow-hidden rounded-full mt-0.5">
           <div
             className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.7)] transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
@@ -135,7 +135,7 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* Main Scrollable Level Map Container */}
       <div
         ref={containerRef}
-        className="relative w-full h-[min(540px,65vh)] bg-gradient-to-b from-[#162357] via-[#121c47] to-[#0e163b] border-2 border-indigo-400/50 rounded-2xl shadow-[0_4px_25px_rgba(59,130,246,0.25)] overflow-y-scroll overflow-x-hidden p-3 sm:p-4 select-none scroll-smooth"
+        className="relative flex-1 min-h-0 w-full bg-gradient-to-b from-[#162357] via-[#121c47] to-[#0e163b] border-2 border-indigo-400/50 rounded-2xl shadow-[0_4px_25px_rgba(59,130,246,0.25)] overflow-y-auto overflow-x-hidden p-3 sm:p-4 select-none scroll-smooth overscroll-contain"
       >
         {/* Dynamic scroll indicator on map */}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-[9px] font-headline font-bold uppercase tracking-widest text-cyan-400 bg-indigo-950/85 border border-cyan-400/40 px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 animate-pulse">
@@ -243,17 +243,17 @@ export const MapView: React.FC<MapViewProps> = ({
       </div>
 
       {/* Map Legend */}
-      <div className="mt-3 flex items-center justify-between px-2 text-[11px] font-headline font-bold text-violet-300">
+      <div className="mt-2 shrink-0 flex items-center justify-between px-2 text-[10px] sm:text-[11px] font-headline font-bold text-violet-300">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-blue-500 border border-cyan-300" />
+          <div className="w-2.5 h-2.5 rounded-full bg-blue-500 border border-cyan-300" />
           <span>Completed</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-rose-600 border border-rose-400" />
+          <div className="w-2.5 h-2.5 rounded-full bg-rose-600 border border-rose-400" />
           <span>Boss Stage</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-[#0f183b] border border-indigo-800" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#0f183b] border border-indigo-800" />
           <span>Locked</span>
         </div>
       </div>
@@ -261,12 +261,18 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* Level Details Modal */}
       <AnimatePresence>
         {selectedLevel && (
-          <div className="fixed inset-0 z-50 bg-[#090f2b]/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div
+            className="fixed inset-0 z-[100] bg-[#090f2b]/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none touch-manipulation"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedLevel(null);
+            }}
+          >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 15 }}
               className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/60 rounded-2xl shadow-[0_10px_35px_rgba(59,130,246,0.35)] w-full max-w-xs sm:max-w-sm p-4 sm:p-6 relative flex flex-col gap-3 sm:gap-4 text-left max-h-[90dvh] overflow-y-auto allow-scroll"
+              onClick={(e) => e.stopPropagation()}
             >
               <button
                 className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-indigo-950/80 border border-indigo-400/40 text-violet-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
@@ -338,12 +344,18 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* Dynamic Boss Challenge Preview Modal */}
       <AnimatePresence>
         {selectedBossLevel && (
-          <div className="fixed inset-0 z-50 bg-[#090f2b]/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div
+            className="fixed inset-0 z-[100] bg-[#090f2b]/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none touch-manipulation"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedBossLevel(null);
+            }}
+          >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 15 }}
               className="bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-rose-500/75 rounded-2xl shadow-[0_10px_35px_rgba(244,63,94,0.35)] w-full max-w-xs sm:max-w-sm p-4 sm:p-6 relative flex flex-col gap-3 sm:gap-4 text-left max-h-[90dvh] overflow-y-auto allow-scroll"
+              onClick={(e) => e.stopPropagation()}
             >
               <button
                 className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-indigo-950/80 border border-indigo-400/40 text-violet-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"

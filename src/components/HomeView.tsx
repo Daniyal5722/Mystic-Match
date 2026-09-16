@@ -50,7 +50,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const unclaimedMissionsCount = (gameState.missions || []).filter(m => m.completed && !m.claimed).length;
 
   return (
-    <div className="p-4 gap-y-6 flex flex-col w-full relative z-10 select-none pb-6 text-white flex-1 overflow-y-auto">
+    <div className="flex flex-col w-full relative z-10 select-none pb-4 text-white gap-y-3.5 sm:gap-y-5">
       {/* Mystic Match Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

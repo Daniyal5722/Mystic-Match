@@ -132,9 +132,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   return (
-    
-      <div className="flex flex-col w-full select-none relative z-10 pb-6 text-white gap-y-4 sm:gap-y-6 flex-1 overflow-y-auto">
-      <h3 className="font-headline font-bold uppercase text-xs text-violet-300 mb-3 tracking-wider">
+    <div className="flex flex-col w-full select-none relative z-10 pb-4 text-white gap-y-3 sm:gap-y-4">
+      <h3 className="font-headline font-bold uppercase text-xs text-violet-300 mb-2 tracking-wider">
         Game Configuration & Preferences
       </h3>
 

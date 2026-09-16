@@ -119,6 +119,14 @@ export default function App() {
   const [isRewardedAdOpen, setIsRewardedAdOpen] = useState(false);
   const [levelUpPopup, setLevelUpPopup] = useState<{ level: number } | null>(null);
 
+  // Track if a level is currently active and in progress
+  const [isLevelInProgress, setIsLevelInProgress] = useState<boolean>(false);
+  const [pendingNavigation, setPendingNavigation] = useState<'home' | 'map' | 'settings' | 'profile' | null>(null);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
+
+  // Check if any modal is currently active to prevent background scrolling
+  const isAnyModalOpen = isShopOpen || isDailyLoginOpen || isMissionsOpen || isProfileOpen || isRewardedAdOpen || isLeaveModalOpen || Boolean(levelUpPopup);
+
   // Push Notification Toast
   const [activeNotification, setActiveNotification] = useState<{ title: string; message: string } | null>(null);
 
@@ -157,11 +165,6 @@ export default function App() {
       window.speechSynthesis.speak(utterance);
     }
   };
-
-  // Track if a level is currently active and in progress
-  const [isLevelInProgress, setIsLevelInProgress] = useState<boolean>(false);
-  const [pendingNavigation, setPendingNavigation] = useState<'home' | 'map' | 'settings' | 'profile' | null>(null);
-  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
 
   // Sync state to local storage on any modifications
   useEffect(() => {
@@ -464,7 +467,7 @@ export default function App() {
   return (
     <div
       id="main-viewport-container"
-      className="min-h-screen font-body text-white bg-gradient-to-b from-[#101b44] via-[#0d163a] to-[#09102c] flex items-center justify-center p-0 md:p-4 relative overflow-hidden"
+      className="fixed inset-0 w-full h-full h-[100dvh] font-body text-white bg-gradient-to-b from-[#101b44] via-[#0d163a] to-[#09102c] flex items-center justify-center p-0 md:p-4 overflow-hidden select-none"
     >
       {/* Dynamic atmospheric celestial glow effects */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] pointer-events-none" />
@@ -557,7 +560,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-55 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none"
+            className="fixed inset-0 z-[110] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none touch-manipulation"
             onClick={() => setLevelUpPopup(null)}
           >
             <motion.div
@@ -614,7 +617,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Primary Mobile-first Responsive Container */}
-      <div className="w-full h-[100dvh] md:max-w-md md:mx-auto md:h-[94vh] md:max-h-[890px] bg-gradient-to-b from-[#111c47] via-[#131f4e] to-[#0e163b] border-0 md:border-2 border-indigo-500/50 relative flex flex-col overflow-hidden select-none shadow-[0_0_50px_rgba(59,130,246,0.3)] md:rounded-3xl">
+      <div className="w-full h-[100dvh] md:[@media(min-height:600px)]:max-w-md md:[@media(min-height:600px)]:mx-auto md:[@media(min-height:600px)]:h-[94vh] md:[@media(min-height:600px)]:max-h-[890px] md:[@media(min-height:600px)]:rounded-3xl md:[@media(min-height:600px)]:border-2 border-0 border-indigo-500/50 relative flex flex-col overflow-hidden select-none shadow-[0_0_50px_rgba(59,130,246,0.3)]">
         {/* Responsive Header (Hidden during active gameplay to maximize board canvas and avoid duplicate headers) */}
         {gameState.activeTab !== 'game' && (
           <header className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
@@ -675,12 +678,16 @@ export default function App() {
           </div>
         )}
 
-        {/* Interactive Viewport (Strictly locked & fixed during gameplay, scrollable on Map/Home) */}
+        {/* Interactive Viewport (Strictly locked & fixed during gameplay, scrollable on Map/Home/Settings) */}
         <main
-          className={`flex-1 min-h-0 w-full max-w-full relative flex flex-col select-none p-safe ${
+          className={`flex-1 min-h-0 w-full max-w-full relative flex flex-col select-none ${
             gameState.activeTab === 'game'
-              ? 'p-2 sm:p-2.5 overflow-hidden overscroll-none touch-none h-full justify-between'
-              : 'p-2.5 sm:p-4 overflow-y-auto overflow-x-hidden justify-start'
+              ? 'p-0 overflow-hidden overscroll-none touch-none h-full justify-between'
+              : gameState.activeTab === 'map'
+              ? 'p-2 sm:p-3 overflow-hidden overscroll-none h-full justify-start'
+              : isAnyModalOpen
+              ? 'p-2.5 sm:p-4 overflow-hidden justify-start'
+              : 'p-2.5 sm:p-4 overflow-y-auto overflow-x-hidden overscroll-contain justify-start'
           }`}
           style={{ width: '100%', maxWidth: '100%' }}
         >
@@ -691,7 +698,11 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: -5 }}
               transition={{ duration: 0.15 }}
-              className={`w-full h-full max-w-full min-w-0 flex flex-col flex-1 overflow-y-auto ${gameState.activeTab === 'game' ? 'flex flex-col' : ''}`}
+              className={`w-full max-w-full min-w-0 flex flex-col flex-1 ${
+                gameState.activeTab === 'game'
+                  ? 'h-full overflow-hidden touch-none'
+                  : 'min-h-full'
+              }`}
               style={{ width: '100%', maxWidth: '100%' }}
             >
               {gameState.activeTab === 'home' && (

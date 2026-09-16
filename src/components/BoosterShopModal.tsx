@@ -27,6 +27,18 @@ export const BoosterShopModal: React.FC<BoosterShopModalProps> = ({
   const [isInsufficientOpen, setIsInsufficientOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleInitiateBuy = (item: ShopItem) => {
     triggerHaptic('click');
     setSelectedItem(item);
@@ -56,7 +68,13 @@ export const BoosterShopModal: React.FC<BoosterShopModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#070c24]/85 backdrop-blur-md select-none touch-manipulation"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-[#070c24]/85 backdrop-blur-md select-none touch-manipulation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              triggerHaptic('click');
+              onClose();
+            }
+          }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="shop-modal-title"
@@ -67,6 +85,7 @@ export const BoosterShopModal: React.FC<BoosterShopModalProps> = ({
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
             className="relative w-full max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/70 p-4 sm:p-5 shadow-[0_12px_45px_rgba(59,130,246,0.35)] rounded-2xl text-white max-h-[90dvh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-indigo-400/30 shrink-0">
@@ -83,7 +102,7 @@ export const BoosterShopModal: React.FC<BoosterShopModalProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 bg-[#0b1433] px-2.5 py-1 rounded-xl border border-amber-400/50 text-xs font-headline font-black text-amber-300 shadow-inner">
+                <div className="flex items-center gap-1 bg-[#0b1433] px-2 py-1 rounded-xl border border-amber-400/50 text-xs font-headline font-black text-amber-300 shadow-inner">
                   <span>🪙</span>
                   <span>{gameState.coins.toLocaleString()}</span>
                 </div>
@@ -94,8 +113,9 @@ export const BoosterShopModal: React.FC<BoosterShopModalProps> = ({
                     triggerHaptic('click');
                     onClose();
                   }}
-                  className="w-7 h-7 rounded-full bg-indigo-950/80 border border-indigo-400/40 text-violet-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                  className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full bg-indigo-950/80 border border-indigo-400/40 text-violet-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors active:scale-95"
                   title="Close Emporium"
+                  aria-label="Close Emporium"
                 >
                   <X size={16} />
                 </button>

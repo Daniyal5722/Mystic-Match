@@ -60,15 +60,22 @@ export const RewardedAdModal: React.FC<RewardedAdModalProps> = ({
       
 
         <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070c24]/90 backdrop-blur-md select-none touch-manipulation"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#070c24]/90 backdrop-blur-md select-none touch-manipulation"
         role="dialog"
         aria-modal="true"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            triggerHaptic('click');
+            onClose();
+          }
+        }}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           className="bg-gradient-to-b from-[#19275e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/80 p-5 max-w-xs w-full text-center rounded-2xl shadow-[0_12px_45px_rgba(59,130,246,0.4)] relative"
+          onClick={(e) => e.stopPropagation()}
         >
           <button
             type="button"

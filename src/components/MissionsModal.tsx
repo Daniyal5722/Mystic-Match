@@ -26,10 +26,16 @@ export const MissionsModal: React.FC<MissionsModalProps> = ({
     <AnimatePresence>
       {isOpen && (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#070c24]/85 backdrop-blur-md select-none touch-manipulation"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-[#070c24]/85 backdrop-blur-md select-none touch-manipulation"
         role="dialog"
         aria-modal="true"
         aria-labelledby="missions-modal-title"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            triggerHaptic('click');
+            onClose();
+          }
+        }}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.92, y: 20 }}
@@ -37,6 +43,7 @@ export const MissionsModal: React.FC<MissionsModalProps> = ({
           exit={{ opacity: 0, scale: 0.92, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 220 }}
           className="relative w-full max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/70 p-4 sm:p-5 shadow-[0_12px_45px_rgba(59,130,246,0.35)] rounded-2xl text-white max-h-[90dvh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-indigo-400/30 shrink-0">
