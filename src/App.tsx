@@ -813,7 +813,7 @@ export default function App() {
                 id="home-tab"
                 type="button"
                 onClick={() => handleNavigation('home')}
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 min-w-12 h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'home'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
@@ -828,7 +828,7 @@ export default function App() {
                 id="map-tab"
                 type="button"
                 onClick={() => handleNavigation('map')}
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 min-w-12 h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'map'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
@@ -843,7 +843,7 @@ export default function App() {
                 id="settings-tab"
                 type="button"
                 onClick={() => handleNavigation('settings')}
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 min-w-12 h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'settings'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
