@@ -50,7 +50,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const unclaimedMissionsCount = (gameState.missions || []).filter(m => m.completed && !m.claimed).length;
 
   return (
-    <div className="flex flex-col w-full relative z-10 select-none pb-6 text-white gap-y-6 flex-1 overflow-y-auto">
+    <div className="p-4 gap-y-6 flex flex-col w-full relative z-10 select-none pb-6 text-white flex-1 overflow-y-auto">
       {/* Subtle fantasy background crystal particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-10 left-6 w-2 h-2 bg-cyan-400 rounded-full animate-ping opacity-60" />

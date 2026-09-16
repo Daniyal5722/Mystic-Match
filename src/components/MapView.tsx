@@ -101,7 +101,7 @@ export const MapView: React.FC<MapViewProps> = ({
   const canvasHeight = levels.length * 140 + 100;
 
   return (
-    <div className="flex flex-col w-full select-none relative z-10 pb-6 text-white">
+    <div className="flex flex-col w-full select-none relative z-10 pb-6 text-white gap-y-4 sm:gap-y-6 flex-1 overflow-y-auto">
       {/* Top Banner Context */}
       <div className="mb-4 flex flex-col gap-1.5">
         <div className="flex items-center justify-between">

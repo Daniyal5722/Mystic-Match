@@ -807,7 +807,7 @@ export default function App() {
         {/* Universal Sticky Bottom Navigation Bar (Hidden during active gameplay to maximize puzzle canvas and eliminate overlaps) */}
         {gameState.activeTab !== 'game' && (
           <nav className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-t-2 border-indigo-500/40 pb-safe">
-            <div className="flex items-center justify-center w-full gap-2 sm:gap-4 h-14 sm:h-16 px-2 sm:px-4">
+            <div className="flex items-center justify-between w-full gap-2 sm:gap-4 h-14 sm:h-16 px-2 sm:px-4">
               {/* Tab: Home */}
               <button
                 id="home-tab"
