@@ -805,13 +805,13 @@ export default function App() {
         {/* Universal Sticky Bottom Navigation Bar (Hidden during active gameplay to maximize puzzle canvas and eliminate overlaps) */}
         {gameState.activeTab !== 'game' && (
           <nav className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-t-2 border-indigo-500/40 pb-safe">
-            <div className="grid grid-cols-3 items-center h-14 sm:h-16 px-2 sm:px-4">
+            <div className="flex items-center justify-center w-full gap-2 sm:gap-4 h-14 sm:h-16 px-2 sm:px-4">
               {/* Tab: Home */}
               <button
                 id="home-tab"
                 type="button"
                 onClick={() => handleNavigation('home')}
-                className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'home'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
@@ -826,7 +826,7 @@ export default function App() {
                 id="map-tab"
                 type="button"
                 onClick={() => handleNavigation('map')}
-                className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'map'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
@@ -841,7 +841,7 @@ export default function App() {
                 id="settings-tab"
                 type="button"
                 onClick={() => handleNavigation('settings')}
-                className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'settings'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
