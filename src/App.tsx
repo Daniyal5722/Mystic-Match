@@ -15,6 +15,7 @@ import { BoosterShopModal } from './components/BoosterShopModal';
 import { DailyLoginModal } from './components/DailyLoginModal';
 import { MissionsModal } from './components/MissionsModal';
 import { RewardedAdModal } from './components/RewardedAdModal';
+import { OrientationLockOverlay } from './components/OrientationLockOverlay';
 
 import { playSound } from './audio';
 
@@ -269,6 +270,55 @@ export default function App() {
       };
     }
   }, [gameState.activeTab]);
+
+  // Screen Orientation API: Attempt programmatic forced portrait-only lock
+  useEffect(() => {
+    const lockPortraitOrientation = async () => {
+      try {
+        if (typeof window !== 'undefined' && 'screen' in window && 'orientation' in window.screen) {
+          const orientation = window.screen.orientation as any;
+          if (typeof orientation.lock === 'function') {
+            await orientation.lock('portrait');
+          }
+        }
+      } catch (err) {
+        // Many browsers require fullscreen or user gesture before screen.orientation.lock() succeeds;
+        // The CSS layer handles instantaneous landscape masking gracefully.
+      }
+    };
+
+    lockPortraitOrientation();
+
+    // Re-attempt lock whenever document visibility or fullscreen state changes
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        lockPortraitOrientation();
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      lockPortraitOrientation();
+    };
+
+    // User gesture listener to opportunistically lock orientation on first touch/click
+    const handleFirstUserInteraction = () => {
+      lockPortraitOrientation();
+      window.removeEventListener('click', handleFirstUserInteraction);
+      window.removeEventListener('touchstart', handleFirstUserInteraction);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('click', handleFirstUserInteraction, { once: true });
+    window.addEventListener('touchstart', handleFirstUserInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('click', handleFirstUserInteraction);
+      window.removeEventListener('touchstart', handleFirstUserInteraction);
+    };
+  }, []);
 
   // Economy: Booster Shop Purchase Handler
   const handleBuyBoosterItem = (item: BoosterShopItem) => {
@@ -615,6 +665,9 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+
+      {/* Forced Portrait Orientation Lock Layer (Encourages rotation in landscape) */}
+      <OrientationLockOverlay />
 
       {/* Primary Mobile-first Responsive Container */}
       <div className="w-full h-[100dvh] md:[@media(min-height:600px)]:max-w-md md:[@media(min-height:600px)]:mx-auto md:[@media(min-height:600px)]:h-[94vh] md:[@media(min-height:600px)]:max-h-[890px] md:[@media(min-height:600px)]:rounded-3xl md:[@media(min-height:600px)]:border-2 border-0 border-indigo-500/50 relative flex flex-col overflow-hidden select-none shadow-[0_0_50px_rgba(59,130,246,0.3)]">

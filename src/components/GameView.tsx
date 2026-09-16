@@ -191,24 +191,25 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = React.memo(({
   return (
     <div
       id="game-board-container"
-      className="game-board-container relative aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none"
+      className="game-board-container relative aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1.5 sm:p-2 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none shrink-0"
       style={{
         touchAction: 'none',
-        height: '100%',
-        width: 'auto',
-        maxHeight: '100%',
-        maxWidth: '100%',
         aspectRatio: '1 / 1',
+        width: 'min(90cqmin, 88vw, 42vh, 320px)',
+        height: 'min(90cqmin, 88vw, 42vh, 320px)',
+        maxWidth: 'min(90vw, 320px)',
+        maxHeight: 'min(90vw, 320px)',
       }}
     >
       <div
         id="game-board-grid"
-        className="grid gap-0.5 sm:gap-1 touch-none select-none max-w-full max-h-full"
+        className="grid gap-0.5 sm:gap-1 touch-none select-none max-w-full max-h-full aspect-square"
         style={{
           width: '100%',
           height: '100%',
           maxWidth: '100%',
           maxHeight: '100%',
+          aspectRatio: '1 / 1',
           gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
           gridTemplateRows: 'repeat(8, minmax(0, 1fr))',
         }}
@@ -229,12 +230,13 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = React.memo(({
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
               onTouchCancel={onTouchEnd}
-              className="relative flex items-center justify-center touch-none select-none min-w-0 min-h-0"
+              className="relative flex items-center justify-center touch-none select-none min-w-0 min-h-0 aspect-square"
               style={{
                 width: '100%',
                 height: '100%',
                 maxWidth: '100%',
                 maxHeight: '100%',
+                aspectRatio: '1 / 1',
                 touchAction: 'none',
               }}
             >
@@ -246,7 +248,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = React.memo(({
                     animate={{ scale: isSelected ? 0.85 : 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0, opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 25, mass: 0.8 }}
-                    className={`rounded-md sm:rounded-lg bg-gradient-to-b ${style.bg} ${style.shadow} cursor-pointer relative flex items-center justify-center border ${style.border} overflow-hidden ${
+                    className={`rounded-md sm:rounded-lg bg-gradient-to-b ${style.bg} ${style.shadow} cursor-pointer relative flex items-center justify-center border ${style.border} overflow-hidden aspect-square ${
                       isSelected ? 'ring-2 ring-white z-10' : ''
                     } ${isHinted ? 'ring-2 ring-amber-400 scale-105 z-10' : ''}`}
                     style={{
@@ -254,10 +256,11 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = React.memo(({
                       height: '100%',
                       maxWidth: '100%',
                       maxHeight: '100%',
+                      aspectRatio: '1 / 1',
                     }}
                   >
                     <div className="absolute top-0.5 left-0.5 sm:left-1 w-2/3 h-1/3 bg-white/40 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />
-                    <span className="text-sm sm:text-xl select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
+                    <span className="text-sm sm:text-lg select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -1271,7 +1274,7 @@ export const GameView: React.FC<GameViewProps> = ({
       </div>
 
       {/* Board Scaling Wrapper: Uses flex-1 and min-h-0 to precisely occupy remaining vertical space between HUD and Boosters without overflow */}
-      <div className="flex-1 min-h-0 min-w-0 w-full flex items-center justify-center my-0.5 sm:my-1 overflow-hidden">
+      <div className="board-scaling-wrapper flex-1 min-h-0 min-w-0 w-full flex items-center justify-center my-0.5 sm:my-1 overflow-hidden">
         <GameBoardGrid
           board={board}
           selectedGem={selectedGem}
