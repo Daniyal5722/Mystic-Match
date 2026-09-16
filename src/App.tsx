@@ -563,7 +563,7 @@ export default function App() {
         {/* Responsive Header (Hidden during active gameplay to maximize board canvas and avoid duplicate headers) */}
         {gameState.activeTab !== 'game' && (
           <header className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
-            <div className="h-14 sm:h-16 px-2 sm:px-3 flex items-center justify-between flex-nowrap gap-1">
+            <div className="h-14 sm:h-16 px-1.5 sm:px-3 flex items-center justify-between flex-nowrap gap-1">
               <div
                 onClick={() => handleNavigation('home')}
                 className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group min-w-0"
