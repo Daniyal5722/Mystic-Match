@@ -52,7 +52,7 @@ export const OnboardingOverlay: React.FC<OnboardingOverlayProps> = ({ onComplete
           <div className="flex justify-center gap-2 mb-3">
             {steps.map((_, idx) => (
               <div
-                key={idx}
+                key={`step-dot-${idx}`}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   idx === step ? 'w-6 bg-cyan-400' : 'w-2 bg-indigo-950 border border-indigo-400/40'
                 }`}

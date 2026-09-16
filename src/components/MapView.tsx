@@ -185,7 +185,7 @@ export const MapView: React.FC<MapViewProps> = ({
                     <div className="flex gap-0.5 mb-1">
                       {[1, 2, 3].map((sIndex) => (
                         <Star
-                          key={`${lvl.id}-${sIndex}`}
+                          key={`map-node-star-${lvl.id}-${sIndex}`}
                           size={11}
                           className={`${
                             sIndex <= lvl.stars
@@ -288,7 +288,7 @@ export const MapView: React.FC<MapViewProps> = ({
               <div className="flex justify-center gap-3 py-3 bg-[#0d1538] border border-indigo-500/40 rounded-xl">
                 {[1, 2, 3].map((sIndex) => (
                   <Star
-                    key={`${selectedLevel.id}-${sIndex}`}
+                    key={`modal-star-${selectedLevel.id}-${sIndex}`}
                     size={30}
                     className={`${
                       sIndex <= selectedLevel.stars

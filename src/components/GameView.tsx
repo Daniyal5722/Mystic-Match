@@ -1154,7 +1154,7 @@ export const GameView: React.FC<GameViewProps> = ({
 
             return (
               <div
-                key={gem.id}
+                key={`gem-${rIdx}-${cIdx}-${gem.id}`}
                 onClick={() => handleGemClick(gem)}
                 onTouchStart={(e) => handleTouchStart(e, gem)}
                 onTouchMove={handleTouchMove}
@@ -1199,7 +1199,7 @@ export const GameView: React.FC<GameViewProps> = ({
         {/* Particle bursts for matches */}
         {particleBursts.map(burst => (
           <motion.div
-            key={burst.id}
+            key={`burst-${burst.id}`}
             initial={{ scale: 0, opacity: 1 }}
             animate={{ scale: 3, opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
@@ -1461,7 +1461,7 @@ export const GameView: React.FC<GameViewProps> = ({
               {gameResult === 'won' && (
                 <div className="flex justify-center gap-2 sm:gap-3 my-3 sm:my-4">
                   {[1, 2, 3].map((starIdx) => (
-                    <Star key={starIdx} size={30} className="text-amber-400 fill-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,1)] animate-bounce" style={{ animationDelay: `${starIdx * 0.15}s` }} />
+                    <Star key={`star-${starIdx}-${currentLevelId}`} size={30} className="text-amber-400 fill-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,1)] animate-bounce" style={{ animationDelay: `${starIdx * 0.15}s` }} />
                   ))}
                 </div>
               )}

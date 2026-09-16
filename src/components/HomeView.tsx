@@ -50,7 +50,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const unclaimedMissionsCount = (gameState.missions || []).filter(m => m.completed && !m.claimed).length;
 
   return (
-    <div className="flex flex-col w-full relative z-10 select-none pb-6 text-white">
+    <div className="flex flex-col w-full relative z-10 select-none pb-6 text-white gap-y-6">
       {/* Subtle fantasy background crystal particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-10 left-6 w-2 h-2 bg-cyan-400 rounded-full animate-ping opacity-60" />
@@ -63,7 +63,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-3 text-center relative"
+        className="flex flex-col items-center justify-center text-center relative w-full"
       >
         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#172559]/80 border border-cyan-400/40 rounded-full text-cyan-300 text-[10px] font-bold uppercase tracking-widest mb-1 shadow-[0_0_12px_rgba(34,211,238,0.25)]">
           <Sparkles size={11} className="text-amber-300 animate-spin-slow" />
@@ -82,11 +82,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           triggerHaptic('click');
           onOpenProfile();
         }}
-        className="card-glowing-purple p-3.5 mb-3 rounded-2xl relative cursor-pointer hover:border-purple-400 transition-all group"
+        className="card-glowing-purple p-3.5 rounded-2xl relative cursor-pointer hover:border-purple-400 transition-all group flex flex-col w-full"
       >
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="relative">
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="relative shrink-0">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 border-2 border-cyan-300 flex items-center justify-center font-headline font-black text-base text-white shadow-[0_0_15px_rgba(34,211,238,0.4)]">
                 {gameState.name ? gameState.name.slice(0, 2).toUpperCase() : 'P1'}
               </div>
@@ -94,20 +94,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 LVL {gameState.level}
               </span>
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h2 className="font-headline text-sm sm:text-base font-extrabold tracking-tight text-white uppercase group-hover:text-cyan-300 transition-colors">
+                <h2 className="font-headline text-sm sm:text-base font-extrabold tracking-tight text-white uppercase group-hover:text-cyan-300 transition-colors truncate">
                   {gameState.name || 'Crystal Mage'}
                 </h2>
-                <ChevronRight size={14} className="text-violet-400 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight size={14} className="text-violet-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
               </div>
-              <p className="text-[11px] font-semibold text-cyan-300">
+              <p className="text-[11px] font-semibold text-cyan-300 truncate">
                 {gameState.level === 0 ? 'Novice Seeker' : `Master of Realm • Rank ${gameState.level}`}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col items-end max-w-[110px] w-full">
+          <div className="flex flex-col items-end max-w-[110px] w-full shrink-0">
             <div className="flex justify-between w-full text-[8px] uppercase font-headline font-bold text-violet-300">
               <span>XP</span>
               <span className="text-amber-300">{gameState.xp}/{gameState.xpMax}</span>
@@ -127,7 +127,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="grid grid-cols-4 gap-2 mb-3 min-w-0"
+        className="grid grid-cols-4 gap-2 w-full min-w-0"
       >
         <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between min-w-0">
           <span className="text-[8px] uppercase font-headline font-bold text-amber-300 flex items-center gap-1 truncate">
@@ -159,7 +159,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </motion.div>
 
       {/* 2-Column Economy Hub: Booster Shop & 7-Day Login */}
-      <div className="grid grid-cols-2 gap-2.5 mb-3">
+      <div className="grid grid-cols-2 gap-2.5 w-full">
         {/* Booster Shop Card */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -220,7 +220,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </div>
 
       {/* Missions and Rewarded Ad Banner Row */}
-      <div className="grid grid-cols-2 gap-2.5 mb-3">
+      <div className="grid grid-cols-2 gap-2.5 w-full">
         {/* Quests / Missions */}
         <div
           onClick={() => {
@@ -229,21 +229,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
           }}
           className="bg-[#121c47] border border-indigo-400/40 hover:border-indigo-300 p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition-all active:scale-[0.98]"
         >
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
               <Target size={14} />
             </div>
-            <div>
-              <p className="font-headline font-black text-[11px] text-white leading-none uppercase">
+            <div className="min-w-0">
+              <p className="font-headline font-black text-[11px] text-white leading-none uppercase truncate">
                 Quests &amp; Bounties
               </p>
-              <p className="text-[8px] text-indigo-300 mt-0.5">
+              <p className="text-[8px] text-indigo-300 mt-0.5 truncate">
                 {unclaimedMissionsCount > 0 ? `${unclaimedMissionsCount} Ready to Claim!` : '5 Active Missions'}
               </p>
             </div>
           </div>
           {unclaimedMissionsCount > 0 && (
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0 ml-1" />
           )}
         </div>
 
@@ -255,20 +255,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
           }}
           className="bg-[#121c47] border border-purple-400/40 hover:border-purple-300 p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition-all active:scale-[0.98]"
         >
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0">
               <Film size={14} />
             </div>
-            <div>
-              <p className="font-headline font-black text-[11px] text-white leading-none uppercase">
+            <div className="min-w-0">
+              <p className="font-headline font-black text-[11px] text-white leading-none uppercase truncate">
                 Mystic Reel
               </p>
-              <p className="text-[8px] text-purple-200 mt-0.5">
+              <p className="text-[8px] text-purple-200 mt-0.5 truncate">
                 +1 Free Booster (3s)
               </p>
             </div>
           </div>
-          <span className="text-[8px] font-headline font-bold text-amber-300">FREE</span>
+          <span className="text-[8px] font-headline font-bold text-amber-300 shrink-0 ml-1">FREE</span>
         </div>
       </div>
 
@@ -277,7 +277,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-[#142054] border border-indigo-400/50 shadow-md p-3.5 rounded-2xl mb-3 text-center relative overflow-hidden"
+        className="bg-[#142054] border border-indigo-400/50 shadow-md p-3.5 rounded-2xl text-center relative overflow-hidden flex flex-col w-full items-center"
       >
         <div className="inline-flex items-center gap-1 bg-amber-400/20 text-amber-300 border border-amber-400/50 px-2.5 py-0.5 rounded-full font-headline text-[9px] font-bold uppercase tracking-wider mb-1.5">
           <Zap size={10} className="fill-current text-amber-400" />
@@ -305,22 +305,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
           triggerHaptic('click');
           setTab('map');
         }}
-        className="card-glowing-blue p-3 rounded-xl flex items-center justify-between hover:border-blue-400 transition-all cursor-pointer group"
+        className="card-glowing-blue p-3 rounded-xl flex items-center justify-between hover:border-blue-400 transition-all cursor-pointer group w-full"
       >
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/40 flex items-center justify-center">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/40 flex items-center justify-center shrink-0">
             <Map size={16} className="text-cyan-400" />
           </div>
-          <div>
-            <h4 className="font-headline font-bold text-xs uppercase text-white mb-0.5 group-hover:text-cyan-300 transition-colors">
+          <div className="min-w-0">
+            <h4 className="font-headline font-bold text-xs uppercase text-white mb-0.5 group-hover:text-cyan-300 transition-colors truncate">
               Realm Map: 50 Stages
             </h4>
-            <p className="text-[9px] text-violet-200 font-medium">
+            <p className="text-[9px] text-violet-200 font-medium truncate">
               Journey across archipelago islands &amp; conquer bosses.
             </p>
           </div>
         </div>
-        <ChevronRight size={16} className="text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
+        <ChevronRight size={16} className="text-cyan-400 group-hover:translate-x-0.5 transition-transform shrink-0 ml-2" />
       </div>
     </div>
   );
