@@ -165,6 +165,140 @@ const WinParticleCanvas: React.FC<{ active: boolean }> = ({ active }) => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[110] w-full h-full" />;
 };
 
+interface GameBoardGridProps {
+  board: BoardGem[][];
+  selectedGem: BoardGem | null;
+  hintPair: { g1: BoardGem; g2: BoardGem } | null;
+  particleBursts: Array<{ id: string; x: number; y: number; color: string }>;
+  comboText: string | null;
+  onGemClick: (gem: BoardGem) => void;
+  onTouchStart: (e: React.TouchEvent, gem: BoardGem) => void;
+  onTouchMove: (e: React.TouchEvent) => void;
+  onTouchEnd: (e: React.TouchEvent) => void;
+}
+
+const GameBoardGrid: React.FC<GameBoardGridProps> = React.memo(({
+  board,
+  selectedGem,
+  hintPair,
+  particleBursts,
+  comboText,
+  onGemClick,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+}) => {
+  return (
+    <div
+      id="game-board-container"
+      className="game-board-container relative w-full max-w-full aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none shrink"
+      style={{ touchAction: 'none' }}
+    >
+      <div
+        id="game-board-grid"
+        className="grid gap-0.5 sm:gap-1 touch-none select-none max-w-full max-h-full"
+        style={{
+          width: '100%',
+          height: '100%',
+          maxWidth: '100%',
+          maxHeight: '100%',
+          gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
+          gridTemplateRows: 'repeat(8, minmax(0, 1fr))',
+        }}
+      >
+        {board.map((row, rIdx) => row.map((gem, cIdx) => {
+          const style = GEM_STYLES[gem.type] || GEM_STYLES.sapphire;
+          const isSelected = selectedGem?.id === gem.id;
+          const isHinted = hintPair && (
+            (hintPair.g1.row === rIdx && hintPair.g1.col === cIdx) ||
+            (hintPair.g2.row === rIdx && hintPair.g2.col === cIdx)
+          );
+
+          return (
+            <div
+              key={`gem-${rIdx}-${cIdx}-${gem.id}`}
+              onClick={() => onGemClick(gem)}
+              onTouchStart={(e) => onTouchStart(e, gem)}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onTouchCancel={onTouchEnd}
+              className="relative flex items-center justify-center touch-none select-none min-w-0 min-h-0"
+              style={{
+                width: '100%',
+                height: '100%',
+                maxWidth: '100%',
+                maxHeight: '100%',
+                touchAction: 'none',
+              }}
+            >
+              <AnimatePresence>
+                {!gem.isMatched && (
+                  <motion.div
+                    layout
+                    initial={gem.isNew ? { scale: 0.1, y: -20, opacity: 0 } : false}
+                    animate={{ scale: isSelected ? 0.85 : 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25, mass: 0.8 }}
+                    className={`rounded-md sm:rounded-lg bg-gradient-to-b ${style.bg} ${style.shadow} cursor-pointer relative flex items-center justify-center border ${style.border} overflow-hidden ${
+                      isSelected ? 'ring-2 ring-white z-10' : ''
+                    } ${isHinted ? 'ring-2 ring-amber-400 scale-105 z-10' : ''}`}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                    }}
+                  >
+                    <div className="absolute top-0.5 left-0.5 sm:left-1 w-2/3 h-1/3 bg-white/40 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />
+                    <span className="text-sm sm:text-xl select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        }))}
+      </div>
+
+      {/* Particle bursts for matches */}
+      {particleBursts.map(burst => (
+        <motion.div
+          key={`burst-${burst.id}`}
+          initial={{ scale: 0, opacity: 1 }}
+          animate={{ scale: 3, opacity: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: `${(burst.x / 8) * 100 + 6}%`,
+            top: `${(burst.y / 8) * 100 + 6}%`,
+            width: '28px',
+            height: '28px',
+            backgroundColor: burst.color,
+            boxShadow: `0 0 20px ${burst.color}`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 20
+          }}
+        />
+      ))}
+
+      <AnimatePresence>
+        {comboText && (
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0, y: 15 }}
+            animate={{ scale: 1.1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.8, opacity: 0, y: -15 }}
+            transition={{ type: 'spring' }}
+            className="absolute pointer-events-none z-30 font-headline font-black text-sm sm:text-base text-amber-300 bg-[#0e163b]/95 px-3.5 py-1.5 rounded-xl border-2 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.7)] uppercase tracking-wider max-w-[90%]"
+          >
+            {comboText}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+
+GameBoardGrid.displayName = 'GameBoardGrid';
+
 export const GameView: React.FC<GameViewProps> = ({
   gameState,
   setTab,
@@ -1130,111 +1264,17 @@ export const GameView: React.FC<GameViewProps> = ({
       </div>
 
       {/* Main 8x8 Board (Touch-locked, fluid grid units, clamp scaled for 320px-430px viewports) */}
-      <div
-        id="game-board-container"
-        className="game-board-container relative w-full max-w-full aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none shrink"
-        style={{ touchAction: 'none' }}
-      >
-        <div
-          id="game-board-grid"
-          className="grid gap-0.5 sm:gap-1 touch-none select-none max-w-full max-h-full"
-          style={{
-            width: '100%',
-            height: '100%',
-            maxWidth: '100%',
-            maxHeight: '100%',
-            gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
-            gridTemplateRows: 'repeat(8, minmax(0, 1fr))',
-          }}
-        >
-          {board.map((row, rIdx) => row.map((gem, cIdx) => {
-            const style = GEM_STYLES[gem.type] || GEM_STYLES.sapphire;
-            const isSelected = selectedGem?.id === gem.id;
-            const isHinted = hintPair && (
-              (hintPair.g1.row === rIdx && hintPair.g1.col === cIdx) ||
-              (hintPair.g2.row === rIdx && hintPair.g2.col === cIdx)
-            );
-
-            return (
-              <div
-                key={`gem-${rIdx}-${cIdx}-${gem.id}`}
-                onClick={() => handleGemClick(gem)}
-                onTouchStart={(e) => handleTouchStart(e, gem)}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                onTouchCancel={handleTouchEnd}
-                className="relative flex items-center justify-center touch-none select-none min-w-0 min-h-0"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  touchAction: 'none',
-                }}
-              >
-                <AnimatePresence>
-                  {!gem.isMatched && (
-                    <motion.div
-                      layout
-                      initial={gem.isNew ? { scale: 0.1, y: -20, opacity: 0 } : false}
-                      animate={{ scale: isSelected ? 0.85 : 1, opacity: 1, y: 0 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 25, mass: 0.8 }}
-                      className={`rounded-md sm:rounded-lg bg-gradient-to-b ${style.bg} ${style.shadow} cursor-pointer relative flex items-center justify-center border ${style.border} overflow-hidden ${
-                        isSelected ? 'ring-2 ring-white z-10' : ''
-                      } ${isHinted ? 'ring-2 ring-amber-400 animate-pulse scale-105 z-10' : ''}`}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        maxWidth: '100%',
-                        maxHeight: '100%',
-                      }}
-                    >
-                      <div className="absolute top-0.5 left-0.5 sm:left-1 w-2/3 h-1/3 bg-white/40 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />
-                      <span className="text-sm sm:text-xl select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          }))}
-        </div>
-
-        {/* Particle bursts for matches */}
-        {particleBursts.map(burst => (
-          <motion.div
-            key={`burst-${burst.id}`}
-            initial={{ scale: 0, opacity: 1 }}
-            animate={{ scale: 3, opacity: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              left: `${(burst.x / 8) * 100 + 6}%`,
-              top: `${(burst.y / 8) * 100 + 6}%`,
-              width: '28px',
-              height: '28px',
-              backgroundColor: burst.color,
-              boxShadow: `0 0 20px ${burst.color}`,
-              transform: 'translate(-50%, -50%)',
-              zIndex: 20
-            }}
-          />
-        ))}
-
-        <AnimatePresence>
-          {comboText && (
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0, y: 15 }}
-              animate={{ scale: 1.1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: -15 }}
-              transition={{ type: 'spring' }}
-              className="absolute pointer-events-none z-30 font-headline font-black text-sm sm:text-base text-amber-300 bg-[#0e163b]/95 px-3.5 py-1.5 rounded-xl border-2 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.7)] uppercase tracking-wider max-w-[90%]"
-            >
-              {comboText}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <GameBoardGrid
+        board={board}
+        selectedGem={selectedGem}
+        hintPair={hintPair}
+        particleBursts={particleBursts}
+        comboText={comboText}
+        onGemClick={handleGemClick}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      />
 
       {/* Dynamic hint banner */}
       <div className="text-center my-1 shrink-0 px-1 w-full max-w-full" style={{ width: '100%', maxWidth: '100%' }}>

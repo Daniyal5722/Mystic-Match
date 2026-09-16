@@ -50,7 +50,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const unclaimedMissionsCount = (gameState.missions || []).filter(m => m.completed && !m.claimed).length;
 
   return (
-    <div className="p-4 gap-y-6 flex flex-col w-full relative z-10 select-none pb-6 text-white flex-1 overflow-y-auto">
+    <div className="p-3 sm:p-4 gap-y-3.5 sm:gap-y-4 flex flex-col w-full relative z-10 select-none pb-6 text-white flex-1 overflow-y-auto">
       {/* Mystic Match Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -263,27 +263,27 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
       {/* Live Event Play Action Card */}
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-[#142054] border border-indigo-400/50 shadow-md p-3.5 rounded-2xl text-center relative overflow-hidden flex flex-col w-full items-center"
+        className="bg-[#121c47] border border-amber-400/40 hover:border-amber-400 p-3 sm:p-3.5 rounded-xl text-center relative overflow-hidden flex flex-col w-full items-center shadow-md transition-all"
       >
-        <div className="inline-flex items-center gap-1 bg-amber-400/20 text-amber-300 border border-amber-400/50 px-2.5 py-0.5 rounded-full font-headline text-[9px] font-bold uppercase tracking-wider mb-1.5">
+        <div className="inline-flex items-center gap-1 bg-amber-400/20 text-amber-300 border border-amber-400/50 px-2.5 py-0.5 rounded-full font-headline text-[8.5px] sm:text-[9px] font-bold uppercase tracking-wider mb-1">
           <Zap size={10} className="fill-current text-amber-400" />
           Live Event Active
         </div>
-        <h3 className="font-headline text-xl font-black uppercase text-amber-300 tracking-tight leading-none mb-1">
+        <h3 className="font-headline text-base sm:text-lg font-black uppercase text-amber-300 tracking-tight leading-none mb-0.5">
           Crystal Frenzy
         </h3>
-        <p className="text-[11px] text-amber-100/90 font-medium max-w-xs mx-auto mb-2.5">
+        <p className="text-[10px] sm:text-[11px] text-amber-100/90 font-medium mb-2 leading-tight">
           Stage {gameState.currentPlayingLevelId || 1}: Clear match-3 objectives to claim stars!
         </p>
 
         <button
           onClick={goToMap}
-          className="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 py-2.5 px-4 rounded-xl font-headline font-black text-sm uppercase tracking-wider shadow-[0_4px_20px_rgba(251,191,36,0.35)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 py-2 px-3.5 rounded-lg font-headline font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_2px_12px_rgba(251,191,36,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
         >
-          <Map size={16} className="text-slate-950" />
+          <Map size={15} className="text-slate-950" />
           EXPLORE REALM MAP
         </button>
       </motion.div>
