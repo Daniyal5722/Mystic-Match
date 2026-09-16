@@ -1131,6 +1131,7 @@ export const GameView: React.FC<GameViewProps> = ({
       <div
         id="game-board-container"
         className="game-board-container relative w-full max-w-full aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none shrink"
+        style={{ touchAction: 'none' }}
       >
         <div
           id="game-board-grid"
@@ -1166,6 +1167,7 @@ export const GameView: React.FC<GameViewProps> = ({
                   height: '100%',
                   maxWidth: '100%',
                   maxHeight: '100%',
+                  touchAction: 'none',
                 }}
               >
                 <AnimatePresence>

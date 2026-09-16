@@ -513,13 +513,15 @@ export default function App() {
       />
 
       {/* Booster Shop Modal */}
-      <BoosterShopModal
-        isOpen={isShopOpen}
-        onClose={() => setIsShopOpen(false)}
-        gameState={gameState}
-        onPurchase={handleBuyBoosterItem}
-        triggerHaptic={triggerHapticFeedback}
-      />
+      {isShopOpen && (
+        <BoosterShopModal
+          isOpen={isShopOpen}
+          onClose={() => setIsShopOpen(false)}
+          gameState={gameState}
+          onPurchase={handleBuyBoosterItem}
+          triggerHaptic={triggerHapticFeedback}
+        />
+      )}
 
       {/* 7-Day Login Modal */}
       <DailyLoginModal
@@ -622,7 +624,7 @@ export default function App() {
 
         {/* Interactive Viewport (Strictly locked & fixed during gameplay, scrollable on Map/Home) */}
         <main
-          className={`flex-1 min-h-0 w-full max-w-full relative flex flex-col select-none ${
+          className={`flex-1 min-h-0 w-full max-w-full relative flex flex-col select-none p-safe ${
             gameState.activeTab === 'game'
               ? 'p-2 sm:p-2.5 overflow-hidden overscroll-none touch-none h-full justify-between'
               : 'p-2.5 sm:p-4 overflow-y-auto overflow-x-hidden justify-start'
@@ -636,7 +638,7 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: -5 }}
               transition={{ duration: 0.15 }}
-              className={`w-full h-full max-w-full min-w-0 ${gameState.activeTab === 'game' ? 'flex flex-col' : ''}`}
+              className={`w-full h-full max-w-full min-w-0 flex flex-col flex-1 overflow-y-auto ${gameState.activeTab === 'game' ? 'flex flex-col' : ''}`}
               style={{ width: '100%', maxWidth: '100%' }}
             >
               {gameState.activeTab === 'home' && (
@@ -811,7 +813,7 @@ export default function App() {
                 id="home-tab"
                 type="button"
                 onClick={() => handleNavigation('home')}
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 min-w-12 h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'home'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
@@ -826,7 +828,7 @@ export default function App() {
                 id="map-tab"
                 type="button"
                 onClick={() => handleNavigation('map')}
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 min-w-12 h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'map'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
@@ -841,7 +843,7 @@ export default function App() {
                 id="settings-tab"
                 type="button"
                 onClick={() => handleNavigation('settings')}
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 h-11 sm:h-12 rounded-xl transition-all cursor-pointer ${
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 min-h-12 min-w-12 h-12 rounded-xl transition-all cursor-pointer ${
                   gameState.activeTab === 'settings'
                     ? 'bg-gradient-to-b from-[#223577] to-[#172559] text-amber-300 font-black border-2 border-amber-400/80 shadow-[0_0_15px_rgba(251,191,36,0.3)] -translate-y-0.5'
                     : 'text-violet-300/80 hover:text-cyan-300 hover:bg-[#162354]/50'
