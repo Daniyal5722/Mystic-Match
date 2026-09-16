@@ -15,6 +15,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { GameState, GemType, BoardGem, ActiveLevelSession, BoosterType } from '../types';
+import { playComboChime } from '../audio';
 import { ConfirmationModal } from './ConfirmationModal';
 
 interface GameViewProps {
@@ -725,6 +726,7 @@ export const GameView: React.FC<GameViewProps> = ({
     });
 
     triggerHaptic('match');
+    playComboChime(matched.length, gameState.soundEnabled);
     onMatchMade?.(1);
 
     const matchScore = matched.length * 50;
@@ -1441,17 +1443,37 @@ export const GameView: React.FC<GameViewProps> = ({
       <AnimatePresence>
         {gameResult && (
           <div
-            className="fixed inset-0 z-50 bg-[#070c24]/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 touch-manipulation"
+            className="fixed inset-0 z-50 bg-[#070c24]/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 touch-manipulation overflow-hidden"
             style={{ width: '100%', maxWidth: '100%' }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="game-result-title"
           >
+            {/* Global Particle Overlay for Win Screens */}
+            {gameResult === 'won' && (
+              <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                {Array.from({ length: 24 }).map((_, i) => {
+                  const left = `${(i * 4.15) % 100}%`;
+                  const delay = `${(i * 0.12) % 2.5}s`;
+                  const duration = `${2 + (i % 3) * 0.8}s`;
+                  const size = i % 2 === 0 ? 'w-2.5 h-2.5' : 'w-2 h-2';
+                  const shape = i % 3 === 0 ? 'bg-amber-400 rounded-full' : i % 3 === 1 ? 'bg-cyan-300 rotate-45' : 'bg-purple-400 rounded-sm';
+                  return (
+                    <div
+                      key={`win-particle-${i}`}
+                      className={`win-particle absolute ${size} ${shape} shadow-[0_0_10px_currentColor]`}
+                      style={{ left, animationDelay: delay, animationDuration: duration }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: -20 }}
-              className={`bg-gradient-to-b from-[#18265e] to-[#0f173b] border-2 p-5 sm:p-6 text-center relative rounded-2xl max-h-[90dvh] overflow-y-auto w-full max-w-full ${gameResult === 'won' ? 'border-amber-400/80 shadow-[0_10px_40px_rgba(251,191,36,0.35)]' : 'border-rose-500/80 shadow-[0_10px_40px_rgba(244,63,94,0.35)]'}`}
+              className={`bg-gradient-to-b from-[#18265e] to-[#0f173b] border-2 p-5 sm:p-6 text-center relative z-10 rounded-2xl max-h-[90dvh] overflow-y-auto w-full max-w-full ${gameResult === 'won' ? 'border-amber-400/80 shadow-[0_10px_40px_rgba(251,191,36,0.35)]' : 'border-rose-500/80 shadow-[0_10px_40px_rgba(244,63,94,0.35)]'}`}
               style={{ width: '100%', maxWidth: 'min(100%, 380px)' }}
             >
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#0c1433] mx-auto mb-3 sm:mb-4 border-2 border-indigo-400/40 flex items-center justify-center text-3xl sm:text-4xl shadow-lg">

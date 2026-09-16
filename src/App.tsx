@@ -117,6 +117,7 @@ export default function App() {
   const [isDailyLoginOpen, setIsDailyLoginOpen] = useState(false);
   const [isMissionsOpen, setIsMissionsOpen] = useState(false);
   const [isRewardedAdOpen, setIsRewardedAdOpen] = useState(false);
+  const [levelUpPopup, setLevelUpPopup] = useState<{ level: number } | null>(null);
 
   // Push Notification Toast
   const [activeNotification, setActiveNotification] = useState<{ title: string; message: string } | null>(null);
@@ -549,6 +550,58 @@ export default function App() {
         triggerHaptic={triggerHapticFeedback}
       />
 
+      {/* Level Up Celebration Modal */}
+      <AnimatePresence>
+        {levelUpPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-55 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 select-none"
+            onClick={() => setLevelUpPopup(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              className="relative w-full max-w-sm bg-gradient-to-b from-[#1e2961] via-[#15204c] to-[#0d1333] border-2 border-amber-400 rounded-2xl p-6 text-center shadow-[0_0_50px_rgba(251,191,36,0.6)] animate-glow-flare"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Confetti burst elements */}
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 pointer-events-none overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-cyan-400 to-purple-500 rounded-full blur-xl opacity-60 animate-ping" />
+              </div>
+
+              <div className="text-4xl mb-2 animate-bounce">🎉</div>
+              <h2 className="font-headline font-black text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-cyan-300 uppercase tracking-wider mb-1">
+                Level Up!
+              </h2>
+              <p className="text-violet-300 text-xs mb-4">
+                You have crossed the XP threshold and advanced your arcane rank!
+              </p>
+
+              <div className="my-6 inline-flex items-center justify-center gap-3 bg-[#10193d] border-2 border-cyan-400/80 px-6 py-3 rounded-xl shadow-[0_0_20px_rgba(34,211,238,0.4)]">
+                <span className="text-xs uppercase text-cyan-300 font-bold">New Rank:</span>
+                <span className="font-headline font-black text-2xl text-amber-300">LVL {levelUpPopup.level}</span>
+              </div>
+
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHapticFeedback('win');
+                    setLevelUpPopup(null);
+                  }}
+                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-[#0c1333] font-headline font-black rounded-xl shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all cursor-pointer active:scale-95"
+                >
+                  Continue Journey ⚡
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Push Notification slide down */}
       <AnimatePresence>
         {activeNotification && (
@@ -561,7 +614,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Primary Mobile-first Responsive Container */}
-      <div className="w-full max-w-md mx-auto h-[100dvh] md:h-[94vh] md:max-h-[890px] bg-gradient-to-b from-[#111c47] via-[#131f4e] to-[#0e163b] border-x md:border-2 border-indigo-500/50 relative flex flex-col overflow-hidden select-none shadow-[0_0_50px_rgba(59,130,246,0.3)] md:rounded-3xl">
+      <div className="w-full h-[100dvh] md:max-w-md md:mx-auto md:h-[94vh] md:max-h-[890px] bg-gradient-to-b from-[#111c47] via-[#131f4e] to-[#0e163b] border-0 md:border-2 border-indigo-500/50 relative flex flex-col overflow-hidden select-none shadow-[0_0_50px_rgba(59,130,246,0.3)] md:rounded-3xl">
         {/* Responsive Header (Hidden during active gameplay to maximize board canvas and avoid duplicate headers) */}
         {gameState.activeTab !== 'game' && (
           <header className="shrink-0 w-full z-30 bg-[#111a44]/95 backdrop-blur-md border-b-2 border-indigo-500/40 pt-safe">
@@ -699,6 +752,11 @@ export default function App() {
                         newXp -= newXpMax;
                         newLevel += 1;
                         newXpMax = Math.floor((newXpMax * 1.25) / 100) * 100;
+                      }
+
+                      if (newLevel > prev.level) {
+                        setLevelUpPopup({ level: newLevel });
+                        triggerPushNotification('Level Up!', `⭐ You reached Rank ${newLevel}! Amazing mastery!`);
                       }
 
                       let updatedLevels = [...prev.levels];
