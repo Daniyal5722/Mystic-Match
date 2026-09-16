@@ -277,10 +277,10 @@ html, body, #root {
 }
 
 .game-board-container {
-  width: min(90cqmin, 88vw, 42vh, 320px);
-  height: min(90cqmin, 88vw, 42vh, 320px);
-  max-width: min(90vw, 320px);
-  max-height: min(90vw, 320px);
+  width: min(98cqmin, 94vw, 390px);
+  height: min(98cqmin, 94vw, 390px);
+  max-width: min(98cqmin, 94vw, 390px);
+  max-height: min(98cqmin, 94vw, 390px);
   aspect-ratio: 1 / 1 !important;
   flex-shrink: 0;
   min-width: 0;

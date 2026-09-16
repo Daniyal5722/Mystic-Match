@@ -191,14 +191,14 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = React.memo(({
   return (
     <div
       id="game-board-container"
-      className="game-board-container relative aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1.5 sm:p-2 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none shrink-0"
+      className="game-board-container relative aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none shrink-0"
       style={{
         touchAction: 'none',
         aspectRatio: '1 / 1',
-        width: 'min(90cqmin, 88vw, 42vh, 320px)',
-        height: 'min(90cqmin, 88vw, 42vh, 320px)',
-        maxWidth: 'min(90vw, 320px)',
-        maxHeight: 'min(90vw, 320px)',
+        width: 'min(98cqmin, 94vw, 390px)',
+        height: 'min(98cqmin, 94vw, 390px)',
+        maxWidth: 'min(98cqmin, 94vw, 390px)',
+        maxHeight: 'min(98cqmin, 94vw, 390px)',
       }}
     >
       <div
@@ -260,7 +260,7 @@ const GameBoardGrid: React.FC<GameBoardGridProps> = React.memo(({
                     }}
                   >
                     <div className="absolute top-0.5 left-0.5 sm:left-1 w-2/3 h-1/3 bg-white/40 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />
-                    <span className="text-sm sm:text-lg select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
+                    <span className="text-base sm:text-xl md:text-2xl select-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] leading-none">{style.icon}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
