@@ -51,14 +51,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   return (
     <div className="p-4 gap-y-6 flex flex-col w-full relative z-10 select-none pb-6 text-white flex-1 overflow-y-auto">
-      {/* Subtle fantasy background crystal particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-10 left-6 w-2 h-2 bg-cyan-400 rounded-full animate-ping opacity-60" />
-        <div className="absolute top-28 right-8 w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse opacity-70" />
-        <div className="absolute bottom-32 left-12 w-2 h-2 bg-purple-400 rounded-full animate-pulse opacity-70" />
-        <div className="absolute top-1/2 right-1/4 w-3 h-3 bg-blue-400 rounded-full animate-bounce opacity-40" />
-      </div>
-
       {/* Mystic Match Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -242,9 +234,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </p>
             </div>
           </div>
-          {unclaimedMissionsCount > 0 && (
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0 ml-1" />
-          )}
         </div>
 
         {/* Mystic Reel (Optional Rewarded simulation) */}
