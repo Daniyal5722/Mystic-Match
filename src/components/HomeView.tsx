@@ -127,32 +127,32 @@ export const HomeView: React.FC<HomeViewProps> = ({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="grid grid-cols-4 gap-2 mb-3"
+        className="grid grid-cols-4 gap-2 mb-3 min-w-0"
       >
-        <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between">
-          <span className="text-[8px] uppercase font-headline font-bold text-amber-300 flex items-center gap-1">
-            <Trophy size={10} className="text-amber-400" /> Score
+        <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between min-w-0">
+          <span className="text-[8px] uppercase font-headline font-bold text-amber-300 flex items-center gap-1 truncate">
+            <Trophy size={10} className="text-amber-400 shrink-0" /> Score
           </span>
           <span className="font-headline font-black text-xs sm:text-sm text-amber-300 mt-0.5 truncate">{gameState.score}</span>
         </div>
 
-        <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between">
-          <span className="text-[8px] uppercase font-headline font-bold text-emerald-300 flex items-center gap-1">
-            <Swords size={10} className="text-emerald-400" /> Wins
+        <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between min-w-0">
+          <span className="text-[8px] uppercase font-headline font-bold text-emerald-300 flex items-center gap-1 truncate">
+            <Swords size={10} className="text-emerald-400 shrink-0" /> Wins
           </span>
           <span className="font-headline font-black text-xs sm:text-sm text-emerald-400 mt-0.5 truncate">{gameState.wins}</span>
         </div>
 
-        <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between">
-          <span className="text-[8px] uppercase font-headline font-bold text-orange-300 flex items-center gap-1">
-            <Flame size={10} className="text-orange-400" /> Streak
+        <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between min-w-0">
+          <span className="text-[8px] uppercase font-headline font-bold text-orange-300 flex items-center gap-1 truncate">
+            <Flame size={10} className="text-orange-400 shrink-0" /> Streak
           </span>
           <span className="font-headline font-black text-xs sm:text-sm text-orange-400 mt-0.5 truncate">{gameState.winStreak || 0}</span>
         </div>
 
-        <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between">
-          <span className="text-[8px] uppercase font-headline font-bold text-cyan-300 flex items-center gap-1">
-            <Play size={10} className="text-cyan-400" /> Matches
+        <div className="bg-gradient-to-b from-[#18265b] to-[#121c45] p-2 sm:p-2.5 rounded-xl border border-indigo-500/40 shadow-sm flex flex-col justify-between min-w-0">
+          <span className="text-[8px] uppercase font-headline font-bold text-cyan-300 flex items-center gap-1 truncate">
+            <Play size={10} className="text-cyan-400 shrink-0" /> Matches
           </span>
           <span className="font-headline font-black text-xs sm:text-sm text-cyan-300 mt-0.5 truncate">{gameState.totalMatchesMade || 0}</span>
         </div>

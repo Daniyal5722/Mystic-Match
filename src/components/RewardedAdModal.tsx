@@ -52,11 +52,14 @@ export const RewardedAdModal: React.FC<RewardedAdModalProps> = ({
     return () => clearInterval(timer);
   }, [isPlaying, countdown, onRewardGranted, triggerHaptic]);
 
-  if (!isOpen) return null;
+  
 
   return (
     <AnimatePresence>
-      <div
+      {isOpen && (
+      
+
+        <div
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070c24]/90 backdrop-blur-md select-none touch-manipulation"
         role="dialog"
         aria-modal="true"
@@ -78,7 +81,9 @@ export const RewardedAdModal: React.FC<RewardedAdModalProps> = ({
             <X size={15} />
           </button>
 
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 border border-cyan-300 flex items-center justify-center mx-auto mb-3 text-white shadow-md">
+          
+
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 border border-cyan-300 flex items-center justify-center mx-auto mb-3 text-white shadow-md">
             <Film size={24} />
           </div>
 
@@ -90,8 +95,12 @@ export const RewardedAdModal: React.FC<RewardedAdModalProps> = ({
           </p>
 
           {completed ? (
-            <div className="bg-[#0b1433] p-3 rounded-xl border border-emerald-400/50 mb-4">
-              <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1 font-headline font-bold text-xs">
+            
+
+        <div className="bg-[#0b1433] p-3 rounded-xl border border-emerald-400/50 mb-4">
+              
+
+        <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1 font-headline font-bold text-xs">
                 <CheckCircle2 size={16} /> Reward Granted!
               </div>
               <p className="text-xs text-white font-headline font-black">
@@ -99,8 +108,12 @@ export const RewardedAdModal: React.FC<RewardedAdModalProps> = ({
               </p>
             </div>
           ) : isPlaying ? (
-            <div className="bg-[#0b1433] p-4 rounded-xl border border-indigo-400/50 mb-4">
-              <div className="text-2xl font-headline font-black text-amber-300 mb-1 animate-pulse">
+            
+
+        <div className="bg-[#0b1433] p-4 rounded-xl border border-indigo-400/50 mb-4">
+              
+
+        <div className="text-2xl font-headline font-black text-amber-300 mb-1 animate-pulse">
                 {countdown}s
               </div>
               <p className="text-[10px] text-cyan-300 font-headline uppercase tracking-wider">
@@ -134,6 +147,7 @@ export const RewardedAdModal: React.FC<RewardedAdModalProps> = ({
           )}
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 };

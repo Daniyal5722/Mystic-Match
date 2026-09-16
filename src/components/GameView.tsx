@@ -19,7 +19,7 @@ import { ConfirmationModal } from './ConfirmationModal';
 
 interface GameViewProps {
   gameState: GameState;
-  setTab: (tab: 'home' | 'map' | 'game' | 'settings') => void;
+  setTab: (tab: 'home' | 'map' | 'game' | 'settings', force?: boolean) => void;
   triggerHaptic: (type?: 'swap' | 'match' | 'win' | 'lose' | 'click' | 'booster') => void;
   triggerPushNotification: (title: string, msg: string) => void;
   onGameEnd: (won: boolean, score: number, perfectRun?: boolean) => void;
@@ -983,7 +983,7 @@ export const GameView: React.FC<GameViewProps> = ({
     saveCurrentSession();
     setIsLeaveConfirmOpen(false);
     onSetLevelInProgress?.(false);
-    setTab(leaveTargetTab);
+    setTab(leaveTargetTab, true);
   };
 
   const handleCancelLeave = () => {
@@ -1089,8 +1089,8 @@ export const GameView: React.FC<GameViewProps> = ({
           className="bg-gradient-to-b from-[#0c244c] to-[#081733] p-1 sm:p-1.5 border border-cyan-400/60 rounded-xl flex flex-col justify-center min-w-0 w-full max-w-full shadow-sm"
           style={{ width: '100%', maxWidth: '100%' }}
         >
-          <div className="flex items-center justify-between">
-            <p className="text-[6.5px] uppercase font-headline font-bold text-cyan-300/80 leading-none">Moves</p>
+          <div className="flex items-center justify-between gap-0.5">
+            <p className="text-[6.5px] uppercase font-headline font-bold text-cyan-300/80 leading-none truncate">Moves</p>
             <Zap size={9} className="text-cyan-400 shrink-0" />
           </div>
           <h3 className={`text-xs sm:text-sm font-headline font-black leading-none mt-0.5 truncate ${movesLeft <= 5 ? 'text-rose-400 animate-pulse' : 'text-cyan-300'}`}>
@@ -1103,8 +1103,8 @@ export const GameView: React.FC<GameViewProps> = ({
           className="bg-gradient-to-b from-[#2a1e0b] to-[#1a1306] p-1 sm:p-1.5 border border-amber-400/60 rounded-xl flex flex-col justify-center min-w-0 w-full max-w-full shadow-sm"
           style={{ width: '100%', maxWidth: '100%' }}
         >
-          <div className="flex items-center justify-between">
-            <p className="text-[6.5px] uppercase font-headline font-bold text-amber-300/80 leading-none">Score</p>
+          <div className="flex items-center justify-between gap-0.5">
+            <p className="text-[6.5px] uppercase font-headline font-bold text-amber-300/80 leading-none truncate">Score</p>
             <Trophy size={9} className="text-amber-400 shrink-0" />
           </div>
           <h3 className="text-xs sm:text-sm font-headline font-black text-amber-300 leading-none mt-0.5 truncate">
@@ -1117,8 +1117,8 @@ export const GameView: React.FC<GameViewProps> = ({
           className="bg-gradient-to-b from-[#211145] to-[#130b2c] p-1 sm:p-1.5 border border-purple-400/60 rounded-xl flex flex-col justify-center min-w-0 w-full max-w-full shadow-sm"
           style={{ width: '100%', maxWidth: '100%' }}
         >
-          <div className="flex items-center justify-between">
-            <p className="text-[6.5px] uppercase font-headline font-bold text-purple-300/80 leading-none">Time</p>
+          <div className="flex items-center justify-between gap-0.5">
+            <p className="text-[6.5px] uppercase font-headline font-bold text-purple-300/80 leading-none truncate">Time</p>
             <Clock size={9} className="text-purple-400 shrink-0" />
           </div>
           <h3 className="text-xs sm:text-sm font-headline font-black text-purple-300 leading-none mt-0.5 truncate font-mono">
@@ -1130,11 +1130,7 @@ export const GameView: React.FC<GameViewProps> = ({
       {/* Main 8x8 Board (Touch-locked, fluid grid units, clamp scaled for 320px-430px viewports) */}
       <div
         id="game-board-container"
-        className="game-board-container relative w-full max-w-full aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden shrink-0 touch-none select-none overscroll-none"
-        style={{
-          width: '100%',
-          maxWidth: 'min(100%, clamp(240px, 100%, 46dvh))',
-        }}
+        className="game-board-container relative w-full max-w-full aspect-square mx-auto bg-gradient-to-b from-[#141f4d] via-[#111942] to-[#0c1333] border-2 border-indigo-400/60 rounded-2xl shadow-[0_8px_30px_rgba(59,130,246,0.3)] p-1 sm:p-1.5 flex items-center justify-center overflow-hidden touch-none select-none overscroll-none shrink"
       >
         <div
           id="game-board-grid"
@@ -1164,7 +1160,7 @@ export const GameView: React.FC<GameViewProps> = ({
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
                 onTouchCancel={handleTouchEnd}
-                className="relative aspect-square flex items-center justify-center touch-none select-none min-w-0 min-h-0"
+                className="relative flex items-center justify-center touch-none select-none min-w-0 min-h-0"
                 style={{
                   width: '100%',
                   height: '100%',

@@ -18,12 +18,13 @@ export const MissionsModal: React.FC<MissionsModalProps> = ({
   onClaimMission,
   triggerHaptic,
 }) => {
-  if (!isOpen) return null;
+  
 
   const missions = gameState.missions || [];
 
   return (
     <AnimatePresence>
+      {isOpen && (
       <div
         className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#070c24]/85 backdrop-blur-md select-none touch-manipulation"
         role="dialog"
@@ -145,6 +146,7 @@ export const MissionsModal: React.FC<MissionsModalProps> = ({
           </div>
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 };

@@ -186,9 +186,9 @@ export default function App() {
   };
 
   // Intercept destructive navigation while playing a level
-  const handleNavigation = (target: 'home' | 'map' | 'settings' | 'profile') => {
+  const handleNavigation = (target: 'home' | 'map' | 'settings' | 'profile', force: boolean = false) => {
     triggerHapticFeedback();
-    if (gameState.activeTab === 'game' && isLevelInProgress) {
+    if (!force && gameState.activeTab === 'game' && isLevelInProgress) {
       setPendingNavigation(target);
       setIsLeaveModalOpen(true);
       return;
@@ -516,9 +516,8 @@ export default function App() {
       <BoosterShopModal
         isOpen={isShopOpen}
         onClose={() => setIsShopOpen(false)}
-        playerCoins={gameState.coins}
-        playerDiamonds={gameState.diamonds}
-        onBuyItem={handleBuyBoosterItem}
+        gameState={gameState}
+        onPurchase={handleBuyBoosterItem}
         triggerHaptic={triggerHapticFeedback}
       />
 
@@ -637,7 +636,7 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98, y: -5 }}
               transition={{ duration: 0.15 }}
-              className="w-full h-full max-w-full min-w-0"
+              className={`w-full h-full max-w-full min-w-0 ${gameState.activeTab === 'game' ? 'flex flex-col' : ''}`}
               style={{ width: '100%', maxWidth: '100%' }}
             >
               {gameState.activeTab === 'home' && (

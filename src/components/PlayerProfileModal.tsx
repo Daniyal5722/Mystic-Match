@@ -22,7 +22,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
   const [nameInput, setNameInput] = useState(gameState.name);
   const [error, setError] = useState('');
 
-  if (!isOpen) return null;
+  
 
   const handleSaveName = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +51,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
 
   return (
     <AnimatePresence>
+      {isOpen && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#090e24]/80 backdrop-blur-md">
         <motion.div
           initial={{ opacity: 0, scale: 0.92, y: 20 }}
@@ -263,6 +264,7 @@ export const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
           </div>
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 };

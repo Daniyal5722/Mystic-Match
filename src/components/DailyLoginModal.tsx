@@ -19,7 +19,7 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
   onClaimDay,
   triggerHaptic,
 }) => {
-  if (!isOpen) return null;
+  
 
   const todayStr = new Date().toISOString().split('T')[0];
   const isClaimedToday = gameState.lastClaimedDaily === todayStr;
@@ -35,6 +35,9 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
 
   return (
     <AnimatePresence>
+      {isOpen && (
+      
+      
       <div
         className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#070c24]/85 backdrop-blur-md select-none touch-manipulation"
         role="dialog"
@@ -49,12 +52,16 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
           className="relative w-full max-w-sm bg-gradient-to-b from-[#18265e] via-[#141f4d] to-[#0f173b] border-2 border-indigo-400/70 p-4 sm:p-5 shadow-[0_12px_45px_rgba(59,130,246,0.35)] rounded-2xl text-white max-h-[90dvh] flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-indigo-400/30 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black shadow-md border border-cyan-300">
+          
+      <div className="flex items-center justify-between pb-3 border-b border-indigo-400/30 shrink-0">
+            
+      <div className="flex items-center gap-2">
+              
+      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-black shadow-md border border-cyan-300">
                 <Calendar size={18} />
               </div>
-              <div>
+              
+      <div>
                 <h3 id="daily-login-title" className="text-base sm:text-lg font-headline font-black uppercase text-white leading-none">
                   Daily Login Calendar
                 </h3>
@@ -76,14 +83,16 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
           </div>
 
           {/* 7 Days Grid */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 my-3 overflow-y-auto allow-scroll pr-0.5">
+          
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 my-3 overflow-y-auto allow-scroll pr-0.5">
             {DAILY_LOGIN_REWARDS.map((reward) => {
               const isPast = reward.day < currentDayCycle || (reward.day === currentDayCycle && isClaimedToday);
               const isToday = reward.day === currentDayCycle && !isClaimedToday;
               const isGrandDay = reward.day === 7;
 
               return (
-                <div
+                
+      <div
                   key={reward.day}
                   className={`p-2 rounded-xl border flex flex-col items-center justify-between text-center relative transition-all min-h-[84px] ${
                     isGrandDay ? 'col-span-3 sm:col-span-2' : ''
@@ -95,7 +104,8 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
                       : 'bg-[#11193b] border-indigo-400/30'
                   }`}
                 >
-                  <div className="w-full flex items-center justify-between text-[8px] font-headline font-black uppercase">
+                  
+      <div className="w-full flex items-center justify-between text-[8px] font-headline font-black uppercase">
                     <span className={isToday ? 'text-amber-300' : 'text-indigo-300'}>
                       Day {reward.day}
                     </span>
@@ -106,7 +116,8 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
                     )}
                   </div>
 
-                  <div className="my-1 text-xl sm:text-2xl">
+                  
+      <div className="my-1 text-xl sm:text-2xl">
                     {reward.day === 1 && '🪙'}
                     {reward.day === 2 && '💡'}
                     {reward.day === 3 && '💰'}
@@ -131,9 +142,11 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
           </div>
 
           {/* Action Button */}
-          <div className="pt-2 border-t border-indigo-400/20 shrink-0">
+          
+      <div className="pt-2 border-t border-indigo-400/20 shrink-0">
             {isClaimedToday ? (
-              <div className="text-center py-2 bg-[#0c1433] rounded-xl border border-indigo-500/30">
+              
+      <div className="text-center py-2 bg-[#0c1433] rounded-xl border border-indigo-500/30">
                 <p className="text-xs font-headline font-bold text-emerald-300 flex items-center justify-center gap-1.5">
                   <Check size={14} /> Today&apos;s Gift Claimed
                 </p>
@@ -153,6 +166,7 @@ export const DailyLoginModal: React.FC<DailyLoginModalProps> = ({
           </div>
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 };

@@ -132,15 +132,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col w-full select-none relative z-10 pb-6 text-white">
+    
+      <div className="flex flex-col w-full select-none relative z-10 pb-6 text-white">
       <h3 className="font-headline font-bold uppercase text-xs text-violet-300 mb-3 tracking-wider">
         Game Configuration & Preferences
       </h3>
 
       {/* Network & Local Storage Synchronization Module */}
+      
       <div className="bg-[#142054] border border-indigo-400/50 rounded-2xl p-4 mb-4 shadow-[0_4px_20px_rgba(59,130,246,0.2)]">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
+        
+      <div className="flex items-center justify-between mb-2">
+          
+      <div className="flex items-center gap-2">
             {gameState.offline ? (
               <WifiOff className="text-amber-400" size={18} />
             ) : (
@@ -166,7 +170,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </p>
 
         {gameState.syncPending && (
-          <div className="bg-[#0e173b] border border-cyan-400/40 rounded-xl p-2 flex items-center justify-between gap-2">
+          
+      <div className="bg-[#0e173b] border border-cyan-400/40 rounded-xl p-2 flex items-center justify-between gap-2">
             <span className="text-[10px] font-headline font-bold text-cyan-300 flex items-center gap-1.5 animate-pulse">
               🔄 Sync queue waiting...
             </span>
@@ -181,6 +186,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* Player Profile Identity Module */}
+      
       <div className="bg-[#142054] border border-indigo-400/50 rounded-2xl p-4 mb-4 shadow-[0_4px_20px_rgba(59,130,246,0.2)]">
         <h4 className="font-headline font-black text-xs uppercase text-white mb-2 leading-none flex items-center gap-1.5">
           <User size={14} className="text-cyan-400" />
@@ -213,12 +219,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* System Preference Toggles */}
+      
       <div className="grid grid-cols-1 gap-3 mb-4">
         {/* Dark Mode */}
-        <div className="bg-[#142054] border border-indigo-400/40 rounded-xl p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        
+      <div className="bg-[#142054] border border-indigo-400/40 rounded-xl p-3 flex items-center justify-between">
+          
+      <div className="flex items-center gap-2.5">
             {gameState.darkMode ? <Moon size={16} className="text-cyan-400" /> : <Sun size={16} className="text-amber-400" />}
-            <div>
+            
+      <div>
               <h5 className="font-headline font-bold text-xs uppercase leading-none">Night Mode</h5>
               <p className="text-[10px] text-violet-300 mt-0.5">Reduced eye strain in low-light environments</p>
             </div>
@@ -232,11 +242,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
 
         {/* Difficulty Mode Selection Module (Easy, Medium, Hard, Extreme) */}
-        <div className="bg-[#142054] border border-indigo-400/50 rounded-2xl p-3 sm:p-4 shadow-[0_4px_20px_rgba(59,130,246,0.2)]">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+        
+      <div className="bg-[#142054] border border-indigo-400/50 rounded-2xl p-3 sm:p-4 shadow-[0_4px_20px_rgba(59,130,246,0.2)]">
+          
+      <div className="flex items-center justify-between mb-2">
+            
+      <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-amber-400 animate-pulse shrink-0" />
-              <div>
+              
+      <div>
                 <h4 className="font-headline font-black text-xs uppercase text-white leading-none">
                   Game Difficulty Mode
                 </h4>
@@ -255,7 +269,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-3">
+          
+      <div className="grid grid-cols-2 gap-2 mt-3">
             {/* Easy */}
             <button
               type="button"
@@ -266,13 +281,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   : 'bg-[#0e173b]/80 border-indigo-500/30 hover:border-emerald-400/50 hover:bg-[#121c47]'
               }`}
             >
-              <div className="flex items-center justify-between">
+              
+      <div className="flex items-center justify-between">
                 <span className="font-headline font-black text-xs uppercase text-emerald-300">
                   Easy
                 </span>
                 <span className="text-[10px]">🌱</span>
               </div>
-              <div className="text-[9px] text-emerald-200/80 mt-1">
+              
+      <div className="text-[9px] text-emerald-200/80 mt-1">
                 <span className="font-bold text-white">60 moves</span> • lowered targets
               </div>
             </button>
@@ -287,13 +304,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   : 'bg-[#0e173b]/80 border-indigo-500/30 hover:border-cyan-400/50 hover:bg-[#121c47]'
               }`}
             >
-              <div className="flex items-center justify-between">
+              
+      <div className="flex items-center justify-between">
                 <span className="font-headline font-black text-xs uppercase text-cyan-300">
                   Medium
                 </span>
                 <span className="text-[10px]">⚖️</span>
               </div>
-              <div className="text-[9px] text-cyan-200/80 mt-1">
+              
+      <div className="text-[9px] text-cyan-200/80 mt-1">
                 <span className="font-bold text-white">45 moves</span> • standard balance
               </div>
             </button>
@@ -308,13 +327,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   : 'bg-[#0e173b]/80 border-indigo-500/30 hover:border-amber-400/50 hover:bg-[#121c47]'
               }`}
             >
-              <div className="flex items-center justify-between">
+              
+      <div className="flex items-center justify-between">
                 <span className="font-headline font-black text-xs uppercase text-amber-300">
                   Hard
                 </span>
                 <span className="text-[10px]">⚡</span>
               </div>
-              <div className="text-[9px] text-amber-200/80 mt-1">
+              
+      <div className="text-[9px] text-amber-200/80 mt-1">
                 <span className="font-bold text-white">35 moves</span> • +30% targets
               </div>
             </button>
@@ -329,13 +350,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   : 'bg-[#0e173b]/80 border-indigo-500/30 hover:border-rose-400/50 hover:bg-[#121c47]'
               }`}
             >
-              <div className="flex items-center justify-between">
+              
+      <div className="flex items-center justify-between">
                 <span className="font-headline font-black text-xs uppercase text-rose-300">
                   Extreme
                 </span>
                 <span className="text-[10px]">🔥</span>
               </div>
-              <div className="text-[9px] text-rose-200/80 mt-1">
+              
+      <div className="text-[9px] text-rose-200/80 mt-1">
                 <span className="font-bold text-white">25 moves</span> • +60% targets
               </div>
             </button>
@@ -343,10 +366,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
 
         {/* High Contrast */}
-        <div className="bg-[#142054] border border-indigo-400/40 rounded-xl p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        
+      <div className="bg-[#142054] border border-indigo-400/40 rounded-xl p-3 flex items-center justify-between">
+          
+      <div className="flex items-center gap-2.5">
             <Accessibility size={16} className="text-amber-400" />
-            <div>
+            
+      <div>
               <h5 className="font-headline font-bold text-xs uppercase leading-none">High Contrast Mode</h5>
               <p className="text-[10px] text-violet-300 mt-0.5">Increases text sizing and border glows</p>
             </div>
@@ -360,10 +386,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
 
         {/* Screen Reader Support */}
-        <div className="bg-[#142054] border border-indigo-400/40 rounded-xl p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        
+      <div className="bg-[#142054] border border-indigo-400/40 rounded-xl p-3 flex items-center justify-between">
+          
+      <div className="flex items-center gap-2.5">
             <Volume2 size={16} className="text-emerald-400" />
-            <div>
+            
+      <div>
               <h5 className="font-headline font-bold text-xs uppercase leading-none">Speech Screen Reader</h5>
               <p className="text-[10px] text-violet-300 mt-0.5">Speaks navigation changes and game alerts</p>
             </div>
@@ -377,11 +406,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
 
         {/* Push Notifications Test Controls */}
-        <div className="bg-[#142054] border border-indigo-400/40 rounded-xl p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2.5">
+        
+      <div className="bg-[#142054] border border-indigo-400/40 rounded-xl p-3">
+          
+      <div className="flex items-center justify-between mb-2">
+            
+      <div className="flex items-center gap-2.5">
               <Bell size={16} className="text-cyan-400" />
-              <div>
+              
+      <div>
                 <h5 className="font-headline font-bold text-xs uppercase leading-none">In-App Notifications</h5>
                 <p className="text-[10px] text-violet-300 mt-0.5">Alerts for quests, syncs, and energy</p>
               </div>
@@ -398,7 +431,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
 
           {gameState.notificationsEnabled && (
-            <div className="mt-2.5 flex gap-2">
+            
+      <div className="mt-2.5 flex gap-2">
               <button
                 onClick={() =>
                   triggerPushNotification(
@@ -427,8 +461,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {/* Reset Progress Section */}
+      
       <div className="bg-[#142054] border border-rose-500/40 rounded-2xl p-4 flex items-center justify-between shadow-[0_4px_20px_rgba(244,63,94,0.15)]">
-        <div>
+        
+      <div>
           <h5 className="font-headline font-bold text-xs uppercase leading-none text-rose-400">Reset Career</h5>
           <p className="text-[10px] text-violet-300 mt-0.5">Clear all saved progress and reset player account</p>
         </div>
