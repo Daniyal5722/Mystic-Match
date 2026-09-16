@@ -31,17 +31,21 @@ export interface Achievement {
 
 export type BoosterType = 'hint' | 'shuffle' | 'undo' | 'hammer' | 'rainbow';
 
-export interface BoosterShopItem {
+export interface ShopItem {
   id: string;
   name: string;
-  type: BoosterType | 'mega_bundle';
-  description: string;
-  quantity: number;
-  coinCost?: number;
-  diamondCost?: number;
+  type: 'single' | 'bundle' | BoosterType | 'mega_bundle';
+  boosterType?: BoosterType;
+  amount: number;
+  costCoins: number;
   icon: string;
+  description: string;
+  coinCost?: number;
+  quantity?: number;
   isPopular?: boolean;
 }
+
+export type BoosterShopItem = ShopItem;
 
 export interface Mission {
   id: string;

@@ -115,16 +115,8 @@ export const DEFAULT_MISSIONS: Mission[] = [
   },
 ];
 
-export interface ShopItem {
-  id: string;
-  name: string;
-  type: 'single' | 'bundle';
-  boosterType?: 'hint' | 'shuffle' | 'undo' | 'hammer' | 'rainbow';
-  amount: number;
-  costCoins: number;
-  icon: string;
-  description: string;
-}
+import { ShopItem } from './types';
+export type { ShopItem };
 
 export const BOOSTER_SHOP_ITEMS: ShopItem[] = [
   {
@@ -133,7 +125,9 @@ export const BOOSTER_SHOP_ITEMS: ShopItem[] = [
     type: 'single',
     boosterType: 'hint',
     amount: 1,
+    quantity: 1,
     costCoins: 100,
+    coinCost: 100,
     icon: '💡',
     description: 'Highlights a guaranteed matching move when you need guidance.',
   },
@@ -143,7 +137,9 @@ export const BOOSTER_SHOP_ITEMS: ShopItem[] = [
     type: 'single',
     boosterType: 'shuffle',
     amount: 1,
+    quantity: 1,
     costCoins: 150,
+    coinCost: 150,
     icon: '🔄',
     description: 'Reshuffles all tiles on the board into fresh match opportunities.',
   },
@@ -153,7 +149,9 @@ export const BOOSTER_SHOP_ITEMS: ShopItem[] = [
     type: 'single',
     boosterType: 'undo',
     amount: 1,
+    quantity: 1,
     costCoins: 150,
+    coinCost: 150,
     icon: '⏪',
     description: 'Reverses your most recent move, restoring your moves and score.',
   },
@@ -163,7 +161,9 @@ export const BOOSTER_SHOP_ITEMS: ShopItem[] = [
     type: 'single',
     boosterType: 'hammer',
     amount: 1,
+    quantity: 1,
     costCoins: 200,
+    coinCost: 200,
     icon: '🔨',
     description: 'Smashes and collects any selected crystal immediately.',
   },
@@ -173,7 +173,9 @@ export const BOOSTER_SHOP_ITEMS: ShopItem[] = [
     type: 'single',
     boosterType: 'rainbow',
     amount: 1,
+    quantity: 1,
     costCoins: 250,
+    coinCost: 250,
     icon: '🌈',
     description: 'Transforms 4 board crystals into your exact objective gem type!',
   },
@@ -182,8 +184,11 @@ export const BOOSTER_SHOP_ITEMS: ShopItem[] = [
     name: 'Grand Mage Bundle',
     type: 'bundle',
     amount: 1,
+    quantity: 1,
     costCoins: 750,
+    coinCost: 750,
     icon: '✨',
+    isPopular: true,
     description: 'Special value pack: 1 Hint, 1 Shuffle, 1 Undo, 1 Hammer, and 1 Rainbow Surge!',
   },
 ];

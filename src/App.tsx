@@ -223,12 +223,16 @@ export default function App() {
     setPendingNavigation(null);
   };
 
-  // Intercept Android / browser back button when inside an active game
+  // Intercept Android / browser back button when inside an active game (only if shop isn't open)
   useEffect(() => {
-    if (gameState.activeTab === 'game' && isLevelInProgress) {
+    if (gameState.activeTab === 'game' && isLevelInProgress && !isShopOpen) {
       window.history.pushState({ inGame: true }, '');
 
       const handlePopState = () => {
+        if (isShopOpen) {
+          setIsShopOpen(false);
+          return;
+        }
         window.history.pushState({ inGame: true }, '');
         setPendingNavigation('map');
         setIsLeaveModalOpen(true);
@@ -239,7 +243,23 @@ export default function App() {
         window.removeEventListener('popstate', handlePopState);
       };
     }
-  }, [gameState.activeTab, isLevelInProgress]);
+  }, [gameState.activeTab, isLevelInProgress, isShopOpen]);
+
+  // Intercept Android / browser back button when Shop is open to return cleanly without resetting level
+  useEffect(() => {
+    if (isShopOpen) {
+      window.history.pushState({ inShop: true }, '');
+
+      const handleShopPopState = () => {
+        setIsShopOpen(false);
+      };
+
+      window.addEventListener('popstate', handleShopPopState);
+      return () => {
+        window.removeEventListener('popstate', handleShopPopState);
+      };
+    }
+  }, [isShopOpen]);
 
   // Strictly prevent any vertical/horizontal webpage scrolling or bounce during active gameplay
   useEffect(() => {
@@ -321,32 +341,65 @@ export default function App() {
   }, []);
 
   // Economy: Booster Shop Purchase Handler
-  const handleBuyBoosterItem = (item: BoosterShopItem) => {
+  const handleBuyBoosterItem = (item: BoosterShopItem): boolean => {
+    const cost = item.costCoins ?? item.coinCost ?? 0;
+    if (gameState.coins < cost) {
+      triggerPushNotification('Insufficient Coins', `You need ${cost} coins to acquire ${item.name}.`);
+      return false;
+    }
+
     setGameState((prev) => {
-      const nextCoins = prev.coins - (item.coinCost || 0);
-      const nextDiamonds = prev.diamonds - (item.diamondCost || 0);
+      if (prev.coins < cost) return prev; // Guard against stale state
+      const nextCoins = Math.max(0, prev.coins - cost);
       const updatedBoosters = { ...prev.boostersCount };
 
-      if (item.type === 'mega_bundle') {
-        updatedBoosters.hammer += 2;
-        updatedBoosters.shuffle += 2;
-        updatedBoosters.hint += 2;
-        updatedBoosters.undo += 2;
-        updatedBoosters.rainbow += 2;
+      const amountToAdd = item.amount || item.quantity || 1;
+
+      if (item.type === 'bundle' || item.type === 'mega_bundle' || item.id === 'shop_bundle') {
+        updatedBoosters.hammer = (updatedBoosters.hammer || 0) + amountToAdd;
+        updatedBoosters.shuffle = (updatedBoosters.shuffle || 0) + amountToAdd;
+        updatedBoosters.hint = (updatedBoosters.hint || 0) + amountToAdd;
+        updatedBoosters.undo = (updatedBoosters.undo || 0) + amountToAdd;
+        updatedBoosters.rainbow = (updatedBoosters.rainbow || 0) + amountToAdd;
       } else {
-        const bType = item.type as BoosterType;
-        updatedBoosters[bType] = (updatedBoosters[bType] || 0) + item.quantity;
+        const boosterType = (item.boosterType || item.type) as BoosterType;
+        if (boosterType in updatedBoosters) {
+          updatedBoosters[boosterType] = (updatedBoosters[boosterType] || 0) + amountToAdd;
+        } else {
+          // Fallback matching by id or name
+          if (item.id.includes('hint') || item.name.toLowerCase().includes('hint')) {
+            updatedBoosters.hint = (updatedBoosters.hint || 0) + amountToAdd;
+          } else if (item.id.includes('shuffle') || item.name.toLowerCase().includes('shuffle')) {
+            updatedBoosters.shuffle = (updatedBoosters.shuffle || 0) + amountToAdd;
+          } else if (item.id.includes('undo') || item.name.toLowerCase().includes('undo')) {
+            updatedBoosters.undo = (updatedBoosters.undo || 0) + amountToAdd;
+          } else if (item.id.includes('hammer') || item.name.toLowerCase().includes('hammer')) {
+            updatedBoosters.hammer = (updatedBoosters.hammer || 0) + amountToAdd;
+          } else if (item.id.includes('rainbow') || item.name.toLowerCase().includes('rainbow')) {
+            updatedBoosters.rainbow = (updatedBoosters.rainbow || 0) + amountToAdd;
+          }
+        }
       }
+
+      // Check booster_expert achievement if applicable
+      const updatedAchievements = (prev.achievements || []).map((ach) => {
+        if (ach.id === 'booster_expert' && !ach.isUnlocked) {
+          return { ...ach, isUnlocked: true };
+        }
+        return ach;
+      });
 
       return {
         ...prev,
         coins: nextCoins,
-        diamonds: nextDiamonds,
-        gemsCount: nextDiamonds,
         boostersCount: updatedBoosters,
+        achievements: updatedAchievements,
       };
     });
+
+    triggerHapticFeedback('booster');
     triggerPushNotification('Emporium Purchase', `Acquired ${item.name}! Added to your inventory.`);
+    return true;
   };
 
   // Economy: Daily Login Claim Handler
@@ -567,15 +620,17 @@ export default function App() {
       />
 
       {/* Booster Shop Modal */}
-      {isShopOpen && (
-        <BoosterShopModal
-          isOpen={isShopOpen}
-          onClose={() => setIsShopOpen(false)}
-          gameState={gameState}
-          onPurchase={handleBuyBoosterItem}
-          triggerHaptic={triggerHapticFeedback}
-        />
-      )}
+      <BoosterShopModal
+        isOpen={isShopOpen}
+        onClose={() => setIsShopOpen(false)}
+        gameState={gameState}
+        onPurchase={handleBuyBoosterItem}
+        onGoToEarnCoins={() => {
+          setIsShopOpen(false);
+          setIsMissionsOpen(true);
+        }}
+        triggerHaptic={triggerHapticFeedback}
+      />
 
       {/* 7-Day Login Modal */}
       <DailyLoginModal

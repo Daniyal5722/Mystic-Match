@@ -54,7 +54,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-[120] bg-[#070c24]/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none touch-manipulation"
+          className="fixed inset-0 z-[150] bg-[#070c24]/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-none touch-manipulation"
           onClick={(e) => {
             if (e.target === e.currentTarget) onCancel();
           }}
@@ -91,27 +91,45 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               {message}
             </p>
 
-            {/* Action Buttons: Safe action clearly placed as primary */}
+            {/* Action Buttons: Responsive to destructive vs positive intent */}
             <div className="flex flex-col gap-2.5">
-              <button
-                ref={cancelBtnRef}
-                type="button"
-                onClick={onCancel}
-                className="w-full py-3 sm:py-3.5 px-4 rounded-xl font-headline font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:brightness-110 active:scale-[0.98] shadow-[0_4px_18px_rgba(34,211,238,0.4)] transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
-              >
-                {cancelLabel}
-              </button>
-              <button
-                type="button"
-                onClick={onConfirm}
-                className={`w-full py-2.5 sm:py-3 px-4 rounded-xl font-headline font-bold text-xs uppercase tracking-wider bg-[#101736] border transition-all cursor-pointer min-h-[44px] flex items-center justify-center active:scale-[0.98] ${
-                  isDestructive
-                    ? 'border-rose-500/60 text-rose-300 hover:bg-rose-950/60 hover:border-rose-400 shadow-[0_2px_12px_rgba(244,63,94,0.15)]'
-                    : 'border-indigo-400/50 text-indigo-200 hover:bg-indigo-900/50'
-                }`}
-              >
-                {confirmLabel}
-              </button>
+              {isDestructive ? (
+                <>
+                  <button
+                    ref={cancelBtnRef}
+                    type="button"
+                    onClick={onCancel}
+                    className="w-full py-3 sm:py-3.5 px-4 rounded-xl font-headline font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 hover:brightness-110 active:scale-[0.98] shadow-[0_4px_18px_rgba(34,211,238,0.4)] transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
+                  >
+                    {cancelLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onConfirm}
+                    className="w-full py-2.5 sm:py-3 px-4 rounded-xl font-headline font-bold text-xs uppercase tracking-wider bg-[#101736] border border-rose-500/60 text-rose-300 hover:bg-rose-950/60 hover:border-rose-400 shadow-[0_2px_12px_rgba(244,63,94,0.15)] transition-all cursor-pointer min-h-[44px] flex items-center justify-center active:scale-[0.98]"
+                  >
+                    {confirmLabel}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={onConfirm}
+                    className="w-full py-3 sm:py-3.5 px-4 rounded-xl font-headline font-black text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 hover:brightness-110 active:scale-[0.98] shadow-[0_4px_20px_rgba(251,191,36,0.4)] transition-all cursor-pointer min-h-[44px] flex items-center justify-center"
+                  >
+                    {confirmLabel}
+                  </button>
+                  <button
+                    ref={cancelBtnRef}
+                    type="button"
+                    onClick={onCancel}
+                    className="w-full py-2.5 sm:py-3 px-4 rounded-xl font-headline font-bold text-xs uppercase tracking-wider bg-[#101736] border border-indigo-400/50 text-indigo-200 hover:bg-indigo-900/50 hover:text-white transition-all cursor-pointer min-h-[44px] flex items-center justify-center active:scale-[0.98]"
+                  >
+                    {cancelLabel}
+                  </button>
+                </>
+              )}
             </div>
           </motion.div>
         </div>

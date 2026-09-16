@@ -985,6 +985,8 @@ export const GameView: React.FC<GameViewProps> = ({
     // 1. HAMMER
     if (type === 'hammer') {
       if (boostersCount.hammer <= 0) {
+        setIsPaused(true);
+        saveCurrentSession();
         onOpenShop?.();
         return;
       }
@@ -995,6 +997,8 @@ export const GameView: React.FC<GameViewProps> = ({
     // 2. SHUFFLE
     if (type === 'shuffle') {
       if (boostersCount.shuffle <= 0) {
+        setIsPaused(true);
+        saveCurrentSession();
         onOpenShop?.();
         return;
       }
@@ -1010,6 +1014,8 @@ export const GameView: React.FC<GameViewProps> = ({
     // 3. HINT
     if (type === 'hint') {
       if (boostersCount.hint <= 0) {
+        setIsPaused(true);
+        saveCurrentSession();
         onOpenShop?.();
         return;
       }
@@ -1031,6 +1037,8 @@ export const GameView: React.FC<GameViewProps> = ({
     // 4. UNDO
     if (type === 'undo') {
       if (boostersCount.undo <= 0) {
+        setIsPaused(true);
+        saveCurrentSession();
         onOpenShop?.();
         return;
       }
@@ -1062,6 +1070,8 @@ export const GameView: React.FC<GameViewProps> = ({
     // 5. RAINBOW / MAGIC MATCH
     if (type === 'rainbow') {
       if (boostersCount.rainbow <= 0) {
+        setIsPaused(true);
+        saveCurrentSession();
         onOpenShop?.();
         return;
       }
